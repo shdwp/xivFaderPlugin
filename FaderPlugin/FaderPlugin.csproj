@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\ILMerge.3.0.41\build\ILMerge.props" Condition="Exists('..\packages\ILMerge.3.0.41\build\ILMerge.props')" />
+  <Import Project="..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props" Condition="Exists('..\packages\Microsoft.CodeAnalysis.Analyzers.3.3.2\build\Microsoft.CodeAnalysis.Analyzers.props')" />
+  <Import Project="..\packages\ILRepack.2.0.18\build\ILRepack.props" Condition="Exists('..\packages\ILRepack.2.0.18\build\ILRepack.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{13C812E9-0D42-4B95-8646-40EEBF30636F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FaderPlugin</RootNamespace>
+    <AssemblyName>faderPluginNoDeps</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <LangVersion>8</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dalamud">
+      <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ImGui.NET">
+      <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ImGuiScene">
+      <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGuiScene.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>C:\Users\shdwp\.nuget\packages\system.numerics.vectors\4.4.0\ref\netstandard2.0\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AtkApi\AtkAddonsApi.cs" />
+    <Compile Include="Config\ConfigElementId.cs" />
+    <Compile Include="Config\ConfigElementSetting.cs" />
+    <Compile Include="Config\Configuration.cs" />
+    <Compile Include="Config\FaderState.cs" />
+    <Compile Include="Plugin.cs" />
+    <Compile Include="PluginUI.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Data\faderPlugin.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\FFXIVClientStructs-main\FFXIVClientStructs.Common\FFXIVClientStructs.Common.csproj">
+      <Project>{e88b1788-20e0-4c56-9bcf-de1ea924fee9}</Project>
+      <Name>FFXIVClientStructs.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\FFXIVClientStructs-main\FFXIVClientStructs.Generators\FFXIVClientStructs.Generators.csproj">
+      <Project>{8b8a128e-52e3-4349-b843-369daa6d224e}</Project>
+      <Name>FFXIVClientStructs.Generators</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\FFXIVClientStructs-main\FFXIVClientStructs\FFXIVClientStructs.csproj">
+      <Project>{56be4110-2cd7-47d0-9b4f-dfc3d53add0c}</Project>
+      <Name>FFXIVClientStructs</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="ILMerge" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Debug'">
+    <!-- Merge and rename -->
+    <Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)/../faderPlugin.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks\dev $(TargetDir)faderPluginNoDeps.dll $(TargetDir)FFXIVClientStructs.dll &#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*';Move-Item '$(TargetDir)\..\faderPlugin.*' -Destination '$(TargetDir)';&quot;" />
+  </Target>
+  <Target Name="PackagePlugin" AfterTargets="CleanOutDir" Condition="'$(Configuration)' == 'Release'">
+    <Message Text="Deleting @(DeleteAssemblies)" Importance="high" />
+    <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" VersionComponents="4" MakeZip="true" Include="&#xD;&#xA;                    RepairMe.dll;&#xD;&#xA;                    RepairMe.json&#xD;&#xA;                " />
+  </Target>
+</Project>
