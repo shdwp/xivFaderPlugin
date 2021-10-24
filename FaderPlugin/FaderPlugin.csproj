@@ -11,7 +11,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>FaderPlugin</RootNamespace>
-    <AssemblyName>faderPluginNoDeps</AssemblyName>
+    <AssemblyName>faderPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -23,7 +23,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>$(AppData)\XIVLauncher\devPlugins\faderPlugin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -32,7 +32,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>$(AppData)\XIVLauncher\devPlugins\faderPlugin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -91,12 +91,4 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="ILMerge" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Debug'">
-    <!-- Merge and rename -->
-    <Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)/../faderPlugin.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks\dev $(TargetDir)faderPluginNoDeps.dll $(TargetDir)FFXIVClientStructs.dll &#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*';Move-Item '$(TargetDir)\..\faderPlugin.*' -Destination '$(TargetDir)';&quot;" />
-  </Target>
-  <Target Name="PackagePlugin" AfterTargets="CleanOutDir" Condition="'$(Configuration)' == 'Release'">
-    <Message Text="Deleting @(DeleteAssemblies)" Importance="high" />
-    <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" VersionComponents="4" MakeZip="true" Include="&#xD;&#xA;                    RepairMe.dll;&#xD;&#xA;                    RepairMe.json&#xD;&#xA;                " />
-  </Target>
 </Project>

@@ -4,9 +4,12 @@ using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.ClientState.Objects.Enums;
+using Dalamud.Game.Command;
+using Dalamud.Game.Gui;
 using Dalamud.Plugin;
 using Dalamud.Interface;
 using Dalamud.IoC;
+using Dalamud.Logging;
 using FaderPlugin.Config;
 using FFXIVClientStructs;
 
@@ -28,12 +31,16 @@ namespace FaderPlugin
         private Timer      pendingTimer;
         private Timer      maintanceTimer;
 
+        private string commandName   = "/fader";
+        private bool   fadingEnabled = true;
+
         [PluginService] private DalamudPluginInterface PluginInterface { get; set; }
         [PluginService] private KeyState               KeyState        { get; set; }
         [PluginService] private Framework              Framework       { get; set; }
         [PluginService] private ClientState            ClientState     { get; set; }
         [PluginService] private Condition              Condition       { get; set; }
-
+        [PluginService] private CommandManager         CommandManager  { get; set; }
+        [PluginService] private ChatGui                ChatGui         { get; set; }
 
         public Plugin()
         {
@@ -48,23 +55,45 @@ namespace FaderPlugin
             this.pendingTimer.Interval = this.configuration.IdleTransitionDelay;
 
             this.maintanceTimer = new Timer();
-            this.maintanceTimer.Interval = 1000;
+            this.maintanceTimer.Interval = 3000;
             this.maintanceTimer.AutoReset = true;
+            this.maintanceTimer.Start();
 
             this.ui = new PluginUI(this.configuration);
 
             this.pendingTimer.Elapsed += TransitionToPendingState;
             this.maintanceTimer.Elapsed += UpdateAddonVisibilityBasedOnCurrentState;
 
-            Framework.Update += OnFrameworkUpdate;
+            this.Framework.Update += OnFrameworkUpdate;
             this.PluginInterface.UiBuilder.Draw += this.ui.Draw;
             this.PluginInterface.UiBuilder.OpenConfigUi += () => this.ui.SettingsVisible = true;
+
+            this.CommandManager.AddHandler(commandName, new CommandInfo(FaderCommandHandler)
+            {
+                HelpMessage = "Opens settings, /fader t toggles whether it's enabled."
+            });
+        }
+
+        private void FaderCommandHandler(string s, string arguments)
+        {
+            if (arguments == "t" || arguments == "toggle")
+            {
+                fadingEnabled = !fadingEnabled;
+                var state = fadingEnabled ? "enabled" : "disabled";
+                this.ChatGui.Print($"Fader plugin {state}.");
+            }
+            else if (arguments == "")
+            {
+                this.ui.SettingsVisible = true;
+            }
         }
 
         public void Dispose()
         {
+            this.CommandManager.RemoveHandler(commandName);
+
             this.ui.Dispose();
-            PluginInterface.Dispose();
+            this.PluginInterface.Dispose();
 
             this.pendingTimer.Elapsed -= TransitionToPendingState;
             this.pendingTimer.Dispose();
@@ -72,7 +101,7 @@ namespace FaderPlugin
             this.maintanceTimer.Elapsed -= UpdateAddonVisibilityBasedOnCurrentState;
             this.maintanceTimer.Dispose();
 
-            Framework.Update -= OnFrameworkUpdate;
+            this.Framework.Update -= OnFrameworkUpdate;
             this.atkAddonsApi.UpdateAddonVisibility(_ => true);
         }
 
@@ -119,23 +148,26 @@ namespace FaderPlugin
         private void ScheduleTransition(FaderState state)
         {
             if (
-                currentState == state
-                || state == FaderState.Crafting
-                || state == FaderState.Gathering
-                || state == FaderState.Combat
-                || state == FaderState.HasEnemyTarget
-                || state == FaderState.HasPlayerTarget
-                || state == FaderState.HasNPCTarget
-                || state == FaderState.UserFocus
+                currentState != state
+                &&
+                (state == FaderState.Crafting
+                 || state == FaderState.Gathering
+                 || state == FaderState.Combat
+                 || state == FaderState.HasEnemyTarget
+                 || state == FaderState.HasPlayerTarget
+                 || state == FaderState.HasNPCTarget
+                 || state == FaderState.UserFocus)
             )
             {
-                pendingTimer.Stop();
-                pendingState = FaderState.None;
+                PluginLog.Debug($"Immediate transition from {currentState} to {state}");
 
+                pendingTimer.Stop();
                 MoveToState(state);
             }
             else if (pendingState != state)
             {
+                PluginLog.Debug($"Pending transition from {currentState} to {state}");
+
                 pendingTimer.Stop();
                 pendingState = state;
                 pendingTimer.Start();
@@ -144,9 +176,11 @@ namespace FaderPlugin
 
         private void TransitionToPendingState(object sender, ElapsedEventArgs e)
         {
-            pendingTimer.Stop();
-            MoveToState(pendingState);
-            pendingState = FaderState.None;
+            if (pendingState != currentState)
+            {
+                pendingTimer.Stop();
+                MoveToState(pendingState);
+            }
         }
 
         private void MoveToState(FaderState newState)
@@ -171,6 +205,11 @@ namespace FaderPlugin
 
             this.atkAddonsApi.UpdateAddonVisibility(addonName =>
             {
+                if (!fadingEnabled)
+                {
+                    return true;
+                }
+
                 return this.configuration.ShouldDisplayElement(addonName, this.currentState) switch
                 {
                     ConfigElementSetting.Show => true,

@@ -14,6 +14,7 @@
         ActionBar08,
         ActionBar09,
         ActionBar10,
+        CrossHotbar,
 
         Job,
 
