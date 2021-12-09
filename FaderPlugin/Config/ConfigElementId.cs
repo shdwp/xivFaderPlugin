@@ -17,6 +17,13 @@
         CrossHotbar,
 
         Job,
+        CastBar,
+        ExperienceBar,
+        InventoryGrid,
+        ScenarioGuide,
+        QuestLog,
+        MainMenu,
+        Chat,
 
         TargetInfo,
         PartyList,

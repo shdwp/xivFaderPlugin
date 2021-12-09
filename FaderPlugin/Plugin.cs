@@ -7,7 +7,6 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.Plugin;
-using Dalamud.Interface;
 using Dalamud.IoC;
 using Dalamud.Logging;
 using FaderPlugin.Config;
@@ -31,7 +30,7 @@ namespace FaderPlugin
         private Timer      pendingTimer;
         private Timer      maintanceTimer;
 
-        private string commandName   = "/fader";
+        private string commandName   = "/pfader";
         private bool   fadingEnabled = true;
 
         [PluginService] private DalamudPluginInterface PluginInterface { get; set; }
@@ -41,21 +40,23 @@ namespace FaderPlugin
         [PluginService] private Condition              Condition       { get; set; }
         [PluginService] private CommandManager         CommandManager  { get; set; }
         [PluginService] private ChatGui                ChatGui         { get; set; }
+        [PluginService] private GameGui                GameGui         { get; set; }
 
         public Plugin()
         {
             Resolver.Initialize();
 
-            this.atkAddonsApi = new AtkApi.AtkAddonsApi();
+            this.atkAddonsApi = new AtkApi.AtkAddonsApi(GameGui);
 
             this.configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             this.configuration.Initialize(PluginInterface);
+            this.configuration.OnSaved += OnConfigurationSaved;
 
             this.pendingTimer = new Timer();
             this.pendingTimer.Interval = this.configuration.IdleTransitionDelay;
 
             this.maintanceTimer = new Timer();
-            this.maintanceTimer.Interval = 3000;
+            this.maintanceTimer.Interval = 1000;
             this.maintanceTimer.AutoReset = true;
             this.maintanceTimer.Start();
 
@@ -70,22 +71,8 @@ namespace FaderPlugin
 
             this.CommandManager.AddHandler(commandName, new CommandInfo(FaderCommandHandler)
             {
-                HelpMessage = "Opens settings, /fader t toggles whether it's enabled."
+                HelpMessage = "Opens settings, /pfader t toggles whether it's enabled."
             });
-        }
-
-        private void FaderCommandHandler(string s, string arguments)
-        {
-            if (arguments == "t" || arguments == "toggle")
-            {
-                fadingEnabled = !fadingEnabled;
-                var state = fadingEnabled ? "enabled" : "disabled";
-                this.ChatGui.Print($"Fader plugin {state}.");
-            }
-            else if (arguments == "")
-            {
-                this.ui.SettingsVisible = true;
-            }
         }
 
         public void Dispose()
@@ -105,9 +92,43 @@ namespace FaderPlugin
             this.atkAddonsApi.UpdateAddonVisibility(_ => true);
         }
 
+        private void FaderCommandHandler(string s, string arguments)
+        {
+            arguments = arguments.Trim();
+            if (arguments == "t" || arguments == "toggle")
+            {
+                fadingEnabled = !fadingEnabled;
+                var state = fadingEnabled ? "enabled" : "disabled";
+                this.ChatGui.Print($"Fader plugin {state}.");
+            }
+#if DEBUG
+            else if (arguments == "dbg")
+            {
+                this.atkAddonsApi.UpdateAddonVisibility((name) =>
+                {
+                    this.ChatGui.Print(name);
+                    return null;
+                });
+            }
+#endif
+            else if (arguments == "")
+            {
+                this.ui.SettingsVisible = true;
+            }
+        }
+
+        private void OnConfigurationSaved()
+        {
+            this.pendingTimer.Interval = this.configuration.IdleTransitionDelay;
+        }
+
         private void OnFrameworkUpdate(Framework framework)
         {
             if (this.KeyState[this.configuration.OverrideKey])
+            {
+                ScheduleTransition(FaderState.UserFocus);
+            }
+            else if (this.configuration.FocusOnHotbarsUnlock && !this.atkAddonsApi.AreHotbarsLocked())
             {
                 ScheduleTransition(FaderState.UserFocus);
             }

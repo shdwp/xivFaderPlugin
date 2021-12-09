@@ -51,7 +51,7 @@ namespace FaderPlugin
 
             if (ImGui.Begin("Fader Plugin Configuration", ref this.settingsVisible))
             {
-                ImGui.Text("Focus key:");
+                ImGui.Text("User Focus key:");
                 ImGuiHelpTooltip("When held interface will be setup as per 'UserFocus' column.");
 
                 if (ImGui.BeginCombo("", CurrentOverrideKey.ToString()))
@@ -67,6 +67,26 @@ namespace FaderPlugin
 
                     ImGui.EndCombo();
                 }
+
+                var focusOnHotbarsUnlock = configuration.FocusOnHotbarsUnlock;
+                if (ImGui.Checkbox("##focus_on_unlocked_bars", ref focusOnHotbarsUnlock))
+                {
+                    this.configuration.FocusOnHotbarsUnlock = focusOnHotbarsUnlock;
+                    this.configuration.Save();
+                }
+                ImGui.SameLine();
+                ImGui.Text("Always User Focus when hotbars are unlocked");
+                ImGuiHelpTooltip("When hotbars are unlocked always setup to the UserFocus column.");
+
+                var idleDelay = (float)TimeSpan.FromMilliseconds(configuration.IdleTransitionDelay).TotalSeconds;
+                ImGui.Text("Idle transition delay:");
+                ImGui.SameLine();
+                if (ImGui.SliderFloat("##idle_delay", ref idleDelay, 0.1f, 15f))
+                {
+                    this.configuration.IdleTransitionDelay = (long)TimeSpan.FromSeconds(idleDelay).TotalMilliseconds;
+                    this.configuration.Save();
+                }
+                ImGuiHelpTooltip("Amount of time it takes to go back to the `Idle` column.");
 
                 ImGui.Text("Elements matrix:");
                 ImGuiHelpTooltip("Decides what to do with each interface element when under certain conditions." +

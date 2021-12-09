@@ -43,6 +43,9 @@
       <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="FFXIVClientStructs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>C:\Users\shdwp\AppData\Roaming\XIVLauncher\addon\Hooks\ae983c6\FFXIVClientStructs.dll</HintPath>
+    </Reference>
     <Reference Include="ImGui.NET">
       <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
       <Private>False</Private>
@@ -71,20 +74,6 @@
     <Content Include="..\Data\faderPlugin.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\FFXIVClientStructs-main\FFXIVClientStructs.Common\FFXIVClientStructs.Common.csproj">
-      <Project>{e88b1788-20e0-4c56-9bcf-de1ea924fee9}</Project>
-      <Name>FFXIVClientStructs.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\FFXIVClientStructs-main\FFXIVClientStructs.Generators\FFXIVClientStructs.Generators.csproj">
-      <Project>{8b8a128e-52e3-4349-b843-369daa6d224e}</Project>
-      <Name>FFXIVClientStructs.Generators</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\FFXIVClientStructs-main\FFXIVClientStructs\FFXIVClientStructs.csproj">
-      <Project>{56be4110-2cd7-47d0-9b4f-dfc3d53add0c}</Project>
-      <Name>FFXIVClientStructs</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

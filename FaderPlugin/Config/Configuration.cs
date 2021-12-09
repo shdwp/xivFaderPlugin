@@ -8,13 +8,13 @@ namespace FaderPlugin.Config
     [Serializable]
     public class Configuration : IPluginConfiguration
     {
-        public int Version { get; set; } = 1;
+        public event Action OnSaved;
 
-        public Dictionary<FaderState, Dictionary<ConfigElementId, ConfigElementSetting>> ElementsTable { get; set; }
-
-        public long IdleTransitionDelay { get; set; } = 2000;
-
-        public int OverrideKey { get; set; } = 0x12;
+        public int                                                                       Version              { get; set; } = 1;
+        public Dictionary<FaderState, Dictionary<ConfigElementId, ConfigElementSetting>> ElementsTable        { get; set; }
+        public long                                                                      IdleTransitionDelay  { get; set; } = 2000;
+        public int                                                                       OverrideKey          { get; set; } = 0x12;
+        public bool                                                                      FocusOnHotbarsUnlock { get; set; } = false;
 
         [NonSerialized]
         private DalamudPluginInterface pluginInterface;
@@ -127,6 +127,7 @@ namespace FaderPlugin.Config
         public void Save()
         {
             this.pluginInterface.SavePluginConfig(this);
+            OnSaved?.Invoke();
         }
 
         private ConfigElementId ConfigElementByName(string name)
@@ -134,6 +135,11 @@ namespace FaderPlugin.Config
             if (name.StartsWith("JobHud"))
             {
                 return ConfigElementId.Job;
+            }
+
+            if (name.StartsWith("ChatLog"))
+            {
+                return ConfigElementId.Chat;
             }
 
             return name switch
@@ -162,6 +168,12 @@ namespace FaderPlugin.Config
                 "_StatusCustom0"        => ConfigElementId.StatusEnhancements,
                 "_StatusCustom1"        => ConfigElementId.StatusEnfeeblements,
                 "_StatusCustom2"        => ConfigElementId.StatusOther,
+                "_CastBar"              => ConfigElementId.CastBar,
+                "_Exp"                  => ConfigElementId.ExperienceBar,
+                "ScenarioTree"          => ConfigElementId.ScenarioGuide,
+                "_BagWidget"            => ConfigElementId.InventoryGrid,
+                "_ToDoList"             => ConfigElementId.QuestLog,
+                "_MainCommand"          => ConfigElementId.MainMenu,
 
                 _ => ConfigElementId.Unknown,
             };
