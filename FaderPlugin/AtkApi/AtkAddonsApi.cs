@@ -25,7 +25,15 @@ namespace FaderPlugin.AtkApi
                 _addon = _gameGui.GetAddonByName("_ActionBar", 1);
             }
 
-            return Marshal.ReadByte(_addon, 0x23f) != 0;
+            try
+            {
+
+                return Marshal.ReadByte(_addon, 0x23f) != 0;
+            }
+            catch (AccessViolationException)
+            {
+                return true;
+            }
         }
 
         public void UpdateAddonVisibility(Func<string, bool?> predicate)

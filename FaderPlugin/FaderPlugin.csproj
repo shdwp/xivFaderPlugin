@@ -17,7 +17,7 @@
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <LangVersion>8</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -44,7 +44,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="FFXIVClientStructs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>C:\Users\shdwp\AppData\Roaming\XIVLauncher\addon\Hooks\ae983c6\FFXIVClientStructs.dll</HintPath>
+      <HintPath>C:\Users\shdwp\AppData\Roaming\XIVLauncher\addon\Hooks\8e5db44\FFXIVClientStructs.dll</HintPath>
     </Reference>
     <Reference Include="ImGui.NET">
       <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
@@ -57,7 +57,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>C:\Users\shdwp\.nuget\packages\system.numerics.vectors\4.4.0\ref\netstandard2.0\System.Numerics.Vectors.dll</HintPath>
+      <HintPath>..\System.Numerics.Vectors.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

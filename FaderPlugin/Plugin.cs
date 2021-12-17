@@ -124,6 +124,12 @@ namespace FaderPlugin
 
         private void OnFrameworkUpdate(Framework framework)
         {
+            if (this.Condition[ConditionFlag.BetweenAreas] || !this.ClientState.IsLoggedIn)
+            {
+                // client weirds out if you mess with addons during loading
+                return;
+            }
+
             if (this.KeyState[this.configuration.OverrideKey])
             {
                 ScheduleTransition(FaderState.UserFocus);
