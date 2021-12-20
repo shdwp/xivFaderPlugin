@@ -20,10 +20,13 @@
         CastBar,
         ExperienceBar,
         InventoryGrid,
+        Currency,
         ScenarioGuide,
         QuestLog,
         MainMenu,
         Chat,
+        Minimap,
+        Nameplates,
 
         TargetInfo,
         PartyList,

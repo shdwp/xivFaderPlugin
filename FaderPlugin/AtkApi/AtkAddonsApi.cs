@@ -49,22 +49,31 @@ namespace FaderPlugin.AtkApi
                 if (name != null)
                 {
                     var value = predicate(name);
-                    if (value == true)
+                    if (value.HasValue)
                     {
-                        if (addon->UldManager.NodeListCount == 0)
-                        {
-                            addon->UldManager.UpdateDrawNodeList();
-                        }
-                    }
-                    else if (value == false)
-                    {
-                        if (addon->UldManager.NodeListCount != 0)
-                        {
-                            addon->UldManager.NodeListCount = 0;
-                        }
+                        addon->IsVisible = value.Value;
                     }
                 }
             }
+        }
+
+        public bool CheckIfFocused(string name)
+        {
+            var focusedUnitsList = &this._stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList;
+            var focusedAddonList = &focusedUnitsList->AtkUnitEntries;
+
+            for (var i = 0; i < focusedUnitsList->Count; i++)
+            {
+                var addon = focusedAddonList[i];
+                var addonName = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
+
+                if (addonName == name)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

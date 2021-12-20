@@ -30,8 +30,8 @@ namespace FaderPlugin
         private Timer      pendingTimer;
         private Timer      maintanceTimer;
 
-        private string commandName   = "/pfader";
-        private bool   fadingEnabled = true;
+        private string commandName = "/pfader";
+        private bool   enabled     = true;
 
         [PluginService] private DalamudPluginInterface PluginInterface { get; set; }
         [PluginService] private KeyState               KeyState        { get; set; }
@@ -56,7 +56,7 @@ namespace FaderPlugin
             this.pendingTimer.Interval = this.configuration.IdleTransitionDelay;
 
             this.maintanceTimer = new Timer();
-            this.maintanceTimer.Interval = 1000;
+            this.maintanceTimer.Interval = 250;
             this.maintanceTimer.AutoReset = true;
             this.maintanceTimer.Start();
 
@@ -97,11 +97,10 @@ namespace FaderPlugin
             arguments = arguments.Trim();
             if (arguments == "t" || arguments == "toggle")
             {
-                fadingEnabled = !fadingEnabled;
-                var state = fadingEnabled ? "enabled" : "disabled";
+                enabled = !enabled;
+                var state = enabled ? "enabled" : "disabled";
                 this.ChatGui.Print($"Fader plugin {state}.");
             }
-#if DEBUG
             else if (arguments == "dbg")
             {
                 this.atkAddonsApi.UpdateAddonVisibility((name) =>
@@ -110,7 +109,6 @@ namespace FaderPlugin
                     return null;
                 });
             }
-#endif
             else if (arguments == "")
             {
                 this.ui.SettingsVisible = true;
@@ -232,12 +230,19 @@ namespace FaderPlugin
 
             this.atkAddonsApi.UpdateAddonVisibility(addonName =>
             {
-                if (!fadingEnabled)
+                if (!enabled)
                 {
                     return true;
                 }
 
-                return this.configuration.ShouldDisplayElement(addonName, this.currentState) switch
+                var element = this.configuration.ConfigElementByName(addonName);
+                if (element == ConfigElementId.Chat && this.atkAddonsApi.CheckIfFocused("ChatLog"))
+                {
+                    return true;
+                }
+
+                var value = this.configuration.GetSetting(element, this.currentState);
+                return value switch
                 {
                     ConfigElementSetting.Show => true,
                     ConfigElementSetting.Hide => false,

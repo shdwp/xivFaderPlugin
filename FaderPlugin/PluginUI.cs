@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using System;
 using System.Numerics;
+using Dalamud.Interface.Colors;
 using FaderPlugin.Config;
 
 namespace FaderPlugin
@@ -51,6 +52,11 @@ namespace FaderPlugin
 
             if (ImGui.Begin("Fader Plugin Configuration", ref this.settingsVisible))
             {
+                // @TODO: remove on net core transition
+                var grey = new Vector4(0.9f, 0.9f, 0.9f, 1f);
+                var green = new Vector4(0f, 0.8f, 0.13f, 1f);
+                var red = new Vector4(1f, 0f, 0f, 1f);
+
                 ImGui.Text("User Focus key:");
                 ImGuiHelpTooltip("When held interface will be setup as per 'UserFocus' column.");
 
@@ -129,6 +135,33 @@ namespace FaderPlugin
                     ImGui.NextColumn();
                     ImGui.SetColumnWidth(columnIndex, columnWidth.X + 20f);
                     ImGui.Text(state.ToString());
+
+                    /*
+                    ImGui.SameLine();
+                    ImGui.PushStyleColor(ImGuiCol.Text, green);
+                    if (ImGui.Button("o##show_all_" + state))
+                    {
+
+                    }
+                    ImGui.PopStyleColor();
+
+                    ImGui.SameLine();
+                    ImGui.PushStyleColor(ImGuiCol.Text, red);
+                    if (ImGui.Button("x##hide_all_" + state))
+                    {
+
+                    }
+                    ImGui.PopStyleColor();
+
+                    ImGui.PushStyleColor(ImGuiCol.Text, grey);
+                    ImGui.SameLine();
+                    if (ImGui.Button("~##skip_all_" + state))
+                    {
+
+                    }
+                    ImGui.PopStyleColor();
+                    */
+
                     ImGuiHelpTooltip(TooltipForState((FaderState)state));
 
                     foreach (var element in Enum.GetValues(typeof(ConfigElementId)))
@@ -147,28 +180,34 @@ namespace FaderPlugin
                         {
                             case ConfigElementSetting.Skip:
                             {
-                                if (ImGui.Button("Skip" + buttonId, buttonSize))
+                                ImGui.PushStyleColor(ImGuiCol.Text, grey);
+                                if (ImGui.Button("skip" + buttonId, buttonSize))
                                 {
                                     UpdateSetting(elementId, stateId, ConfigElementSetting.Hide);
                                 }
+                                ImGui.PopStyleColor();
                                 break;
                             }
 
                             case ConfigElementSetting.Hide:
                             {
-                                if (ImGui.Button("Hide" + buttonId, buttonSize))
+                                ImGui.PushStyleColor(ImGuiCol.Text, red);
+                                if (ImGui.Button("hide" + buttonId, buttonSize))
                                 {
                                     UpdateSetting(elementId, stateId, ConfigElementSetting.Show);
                                 }
+                                ImGui.PopStyleColor();
                                 break;
                             }
 
                             case ConfigElementSetting.Show:
                             {
-                                if (ImGui.Button("Show" + buttonId, buttonSize))
+                                ImGui.PushStyleColor(ImGuiCol.Text, green);
+                                if (ImGui.Button("show" + buttonId, buttonSize))
                                 {
                                     UpdateSetting(elementId, stateId, ConfigElementSetting.Skip);
                                 }
+                                ImGui.PopStyleColor();
                                 break;
                             }
                         }
@@ -213,6 +252,7 @@ namespace FaderPlugin
         {
             return elementId switch
             {
+                ConfigElementId.Chat                => "Should be always visible if focused, albeit feature can be buggy with some configurations",
                 ConfigElementId.Job                 => "Job-specific UI",
                 ConfigElementId.Status              => "Player status (when not split into 3 separate elements)",
                 ConfigElementId.StatusEnfeeblements => "Player enfeeblements (when split into 3 separate elements)",

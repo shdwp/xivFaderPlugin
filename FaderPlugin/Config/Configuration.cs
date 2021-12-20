@@ -97,7 +97,8 @@ namespace FaderPlugin.Config
 
         public ConfigElementSetting ShouldDisplayElement(string name, FaderState state)
         {
-            return GetSetting(ConfigElementByName(name), state);
+            var element = ConfigElementByName(name);
+            return GetSetting(element, state);
         }
 
         public ConfigElementSetting GetSetting(ConfigElementId id, FaderState state)
@@ -130,7 +131,7 @@ namespace FaderPlugin.Config
             OnSaved?.Invoke();
         }
 
-        private ConfigElementId ConfigElementByName(string name)
+        public ConfigElementId ConfigElementByName(string name)
         {
             if (name.StartsWith("JobHud"))
             {
@@ -174,6 +175,9 @@ namespace FaderPlugin.Config
                 "_BagWidget"            => ConfigElementId.InventoryGrid,
                 "_ToDoList"             => ConfigElementId.QuestLog,
                 "_MainCommand"          => ConfigElementId.MainMenu,
+                "_NaviMap"              => ConfigElementId.Minimap,
+                "_Money"                => ConfigElementId.Currency,
+                "NamePlate"             => ConfigElementId.Nameplates,
 
                 _ => ConfigElementId.Unknown,
             };
