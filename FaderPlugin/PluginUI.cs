@@ -24,8 +24,10 @@ namespace FaderPlugin
             set { this.settingsVisible = value; }
         }
 
-        private Vector2      _windowSize = new Vector2(1250, 600) * ImGui.GetIO().FontGlobalScale;
-        private OverrideKeys CurrentOverrideKey => (OverrideKeys)configuration.OverrideKey;
+        private Vector2         _windowSize = new Vector2(1400, 850) * ImGui.GetIO().FontGlobalScale;
+        private ConfigElementId _hoveredElementId;
+        private FaderState      _hoveredState;
+        private OverrideKeys    CurrentOverrideKey => (OverrideKeys)configuration.OverrideKey;
 
         public PluginUI(Configuration configuration)
         {
@@ -56,6 +58,7 @@ namespace FaderPlugin
                 var grey = new Vector4(0.9f, 0.9f, 0.9f, 1f);
                 var green = new Vector4(0f, 0.8f, 0.13f, 1f);
                 var red = new Vector4(1f, 0f, 0f, 1f);
+                var white = new Vector4(1f, 1f, 1f, 1f);
 
                 ImGui.Text("User Focus key:");
                 ImGuiHelpTooltip("When held interface will be setup as per 'UserFocus' column.");
@@ -111,12 +114,12 @@ namespace FaderPlugin
                 ImGui.Text("");
                 foreach (var element in Enum.GetValues(typeof(ConfigElementId)))
                 {
-                    if (element.Equals(ConfigElementId.Unknown))
+                    if (ShouldIgnoreElement((ConfigElementId)element))
                     {
                         continue;
                     }
 
-                    ImGui.Text(element.ToString());
+                    ImGui.TextColored(_hoveredElementId == (ConfigElementId)element ? red : white, element.ToString());
                     var tooltipText = TooltipForElement((ConfigElementId)element);
                     if (tooltipText != null)
                     {
@@ -134,40 +137,14 @@ namespace FaderPlugin
                     columnIndex++;
                     ImGui.NextColumn();
                     ImGui.SetColumnWidth(columnIndex, columnWidth.X + 20f);
-                    ImGui.Text(state.ToString());
 
-                    /*
-                    ImGui.SameLine();
-                    ImGui.PushStyleColor(ImGuiCol.Text, green);
-                    if (ImGui.Button("o##show_all_" + state))
-                    {
-
-                    }
-                    ImGui.PopStyleColor();
-
-                    ImGui.SameLine();
-                    ImGui.PushStyleColor(ImGuiCol.Text, red);
-                    if (ImGui.Button("x##hide_all_" + state))
-                    {
-
-                    }
-                    ImGui.PopStyleColor();
-
-                    ImGui.PushStyleColor(ImGuiCol.Text, grey);
-                    ImGui.SameLine();
-                    if (ImGui.Button("~##skip_all_" + state))
-                    {
-
-                    }
-                    ImGui.PopStyleColor();
-                    */
-
+                    ImGui.TextColored(_hoveredState == (FaderState)state ? red : white, state.ToString());
                     ImGuiHelpTooltip(TooltipForState((FaderState)state));
 
                     foreach (var element in Enum.GetValues(typeof(ConfigElementId)))
                     {
                         var elementId = (ConfigElementId)element;
-                        if (elementId == ConfigElementId.Unknown)
+                        if (ShouldIgnoreElement(elementId))
                         {
                             continue;
                         }
@@ -211,6 +188,12 @@ namespace FaderPlugin
                                 break;
                             }
                         }
+
+                        if (ImGui.IsItemHovered())
+                        {
+                            _hoveredState = stateId;
+                            _hoveredElementId = elementId;
+                        }
                     }
                 }
 
@@ -239,6 +222,7 @@ namespace FaderPlugin
                 FaderState.Crafting        => "Crafting an item",
                 FaderState.Duty            => "In instanced duty",
                 FaderState.Gathering       => "Gathering a node",
+                FaderState.ChatFocus       => "When typing a message in chat",
                 FaderState.UserFocus       => "Focus button pressed",
                 FaderState.HasEnemyTarget  => "Targeting an enemy",
                 FaderState.HasPlayerTarget => "Targeting a player",
@@ -259,6 +243,17 @@ namespace FaderPlugin
                 ConfigElementId.StatusEnhancements  => "Player enhancements (when split into 3 separate elements)",
                 ConfigElementId.StatusOther         => "Player other status (when split into 3 separate elements)",
                 _                                   => null,
+            };
+        }
+
+        private bool ShouldIgnoreElement(ConfigElementId elementId)
+        {
+            return elementId switch
+            {
+                ConfigElementId.QuestLog   => true,
+                ConfigElementId.Nameplates => true,
+                ConfigElementId.Unknown    => true,
+                _                          => false,
             };
         }
 

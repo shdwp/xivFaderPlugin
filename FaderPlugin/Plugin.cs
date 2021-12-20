@@ -18,12 +18,9 @@ namespace FaderPlugin
     {
         public string Name => "Fader Plugin";
 
-        private Configuration       configuration;
-        private PluginUI            ui;
-        private AtkApi.AtkAddonsApi atkAddonsApi;
-
-        public  string AssemblyLocation { get => assemblyLocation; set => assemblyLocation = value; }
-        private string assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        private readonly Configuration       _configuration;
+        private readonly PluginUI            _ui;
+        private readonly AtkApi.AtkAddonsApi _atkAddonsApi;
 
         private FaderState currentState = FaderState.None;
         private FaderState pendingState = FaderState.None;
@@ -46,28 +43,28 @@ namespace FaderPlugin
         {
             Resolver.Initialize();
 
-            this.atkAddonsApi = new AtkApi.AtkAddonsApi(GameGui);
+            this._atkAddonsApi = new AtkApi.AtkAddonsApi(GameGui);
 
-            this.configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-            this.configuration.Initialize(PluginInterface);
-            this.configuration.OnSaved += OnConfigurationSaved;
+            this._configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+            this._configuration.Initialize(PluginInterface);
+            this._configuration.OnSaved += OnConfigurationSaved;
 
             this.pendingTimer = new Timer();
-            this.pendingTimer.Interval = this.configuration.IdleTransitionDelay;
+            this.pendingTimer.Interval = this._configuration.IdleTransitionDelay;
 
             this.maintanceTimer = new Timer();
-            this.maintanceTimer.Interval = 250;
+            this.maintanceTimer.Interval = 1000;
             this.maintanceTimer.AutoReset = true;
             this.maintanceTimer.Start();
 
-            this.ui = new PluginUI(this.configuration);
+            this._ui = new PluginUI(this._configuration);
 
             this.pendingTimer.Elapsed += TransitionToPendingState;
             this.maintanceTimer.Elapsed += UpdateAddonVisibilityBasedOnCurrentState;
 
             this.Framework.Update += OnFrameworkUpdate;
-            this.PluginInterface.UiBuilder.Draw += this.ui.Draw;
-            this.PluginInterface.UiBuilder.OpenConfigUi += () => this.ui.SettingsVisible = true;
+            this.PluginInterface.UiBuilder.Draw += this._ui.Draw;
+            this.PluginInterface.UiBuilder.OpenConfigUi += () => this._ui.SettingsVisible = true;
 
             this.CommandManager.AddHandler(commandName, new CommandInfo(FaderCommandHandler)
             {
@@ -79,7 +76,7 @@ namespace FaderPlugin
         {
             this.CommandManager.RemoveHandler(commandName);
 
-            this.ui.Dispose();
+            this._ui.Dispose();
             this.PluginInterface.Dispose();
 
             this.pendingTimer.Elapsed -= TransitionToPendingState;
@@ -89,7 +86,7 @@ namespace FaderPlugin
             this.maintanceTimer.Dispose();
 
             this.Framework.Update -= OnFrameworkUpdate;
-            this.atkAddonsApi.UpdateAddonVisibility(_ => true);
+            this._atkAddonsApi.UpdateAddonVisibility(_ => true);
         }
 
         private void FaderCommandHandler(string s, string arguments)
@@ -103,7 +100,7 @@ namespace FaderPlugin
             }
             else if (arguments == "dbg")
             {
-                this.atkAddonsApi.UpdateAddonVisibility((name) =>
+                this._atkAddonsApi.UpdateAddonVisibility((name) =>
                 {
                     this.ChatGui.Print(name);
                     return null;
@@ -111,13 +108,13 @@ namespace FaderPlugin
             }
             else if (arguments == "")
             {
-                this.ui.SettingsVisible = true;
+                this._ui.SettingsVisible = true;
             }
         }
 
         private void OnConfigurationSaved()
         {
-            this.pendingTimer.Interval = this.configuration.IdleTransitionDelay;
+            this.pendingTimer.Interval = this._configuration.IdleTransitionDelay;
         }
 
         private void OnFrameworkUpdate(Framework framework)
@@ -128,17 +125,17 @@ namespace FaderPlugin
                 return;
             }
 
-            if (this.KeyState[this.configuration.OverrideKey])
+            if (this.KeyState[this._configuration.OverrideKey])
             {
                 ScheduleTransition(FaderState.UserFocus);
             }
-            else if (this.configuration.FocusOnHotbarsUnlock && !this.atkAddonsApi.AreHotbarsLocked())
+            else if (this._configuration.FocusOnHotbarsUnlock && !this._atkAddonsApi.AreHotbarsLocked())
             {
                 ScheduleTransition(FaderState.UserFocus);
             }
-            else if (this.Condition[ConditionFlag.BoundByDuty])
+            else if (this._atkAddonsApi.IsChatFocused())
             {
-                ScheduleTransition(FaderState.Duty);
+                ScheduleTransition(FaderState.ChatFocus);
             }
             else if (this.Condition[ConditionFlag.InCombat])
             {
@@ -164,6 +161,10 @@ namespace FaderPlugin
             {
                 ScheduleTransition(FaderState.Crafting);
             }
+            else if (this.Condition[ConditionFlag.BoundByDuty])
+            {
+                ScheduleTransition(FaderState.Duty);
+            }
             else
             {
                 ScheduleTransition(FaderState.Idle);
@@ -181,6 +182,7 @@ namespace FaderPlugin
                  || state == FaderState.HasEnemyTarget
                  || state == FaderState.HasPlayerTarget
                  || state == FaderState.HasNPCTarget
+                 || state == FaderState.ChatFocus
                  || state == FaderState.UserFocus)
             )
             {
@@ -228,20 +230,20 @@ namespace FaderPlugin
                 return;
             }
 
-            this.atkAddonsApi.UpdateAddonVisibility(addonName =>
+            this._atkAddonsApi.UpdateAddonVisibility(addonName =>
             {
+                var element = this._configuration.ConfigElementByName(addonName);
+                if (element == ConfigElementId.Unknown)
+                {
+                    return null;
+                }
+
                 if (!enabled)
                 {
                     return true;
                 }
 
-                var element = this.configuration.ConfigElementByName(addonName);
-                if (element == ConfigElementId.Chat && this.atkAddonsApi.CheckIfFocused("ChatLog"))
-                {
-                    return true;
-                }
-
-                var value = this.configuration.GetSetting(element, this.currentState);
+                var value = this._configuration.GetSetting(element, this.currentState);
                 return value switch
                 {
                     ConfigElementSetting.Show => true,

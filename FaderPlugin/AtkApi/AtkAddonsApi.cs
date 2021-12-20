@@ -36,6 +36,11 @@ namespace FaderPlugin.AtkApi
             }
         }
 
+        public bool IsChatFocused()
+        {
+            return CheckIfFocused("ChatLog");
+        }
+
         public void UpdateAddonVisibility(Func<string, bool?> predicate)
         {
             var loadedUnitsList = &this._stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
@@ -51,7 +56,20 @@ namespace FaderPlugin.AtkApi
                     var value = predicate(name);
                     if (value.HasValue)
                     {
-                        addon->IsVisible = value.Value;
+                        if (value.Value)
+                        {
+                            if (addon->UldManager.NodeListCount == 0)
+                            {
+                                addon->UldManager.UpdateDrawNodeList();
+                            }
+                        }
+                        else
+                        {
+                            if (addon->UldManager.NodeListCount != 0)
+                            {
+                                addon->UldManager.NodeListCount = 0;
+                            }
+                        }
                     }
                 }
             }

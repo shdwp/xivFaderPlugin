@@ -10,7 +10,7 @@ namespace FaderPlugin.Config
     {
         public event Action OnSaved;
 
-        public int                                                                       Version              { get; set; } = 1;
+        public int                                                                       Version              { get; set; } = 4;
         public Dictionary<FaderState, Dictionary<ConfigElementId, ConfigElementSetting>> ElementsTable        { get; set; }
         public long                                                                      IdleTransitionDelay  { get; set; } = 2000;
         public int                                                                       OverrideKey          { get; set; } = 0x12;
@@ -34,7 +34,6 @@ namespace FaderPlugin.Config
                     { ConfigElementId.ActionBar04, ConfigElementSetting.Hide },
                     { ConfigElementId.CrossHotbar, ConfigElementSetting.Hide },
                     { ConfigElementId.Parameters, ConfigElementSetting.Hide },
-                    { ConfigElementId.TargetInfo, ConfigElementSetting.Hide },
                     { ConfigElementId.StatusEnhancements, ConfigElementSetting.Hide },
                     { ConfigElementId.Job, ConfigElementSetting.Hide },
                 };
@@ -47,7 +46,6 @@ namespace FaderPlugin.Config
                     { ConfigElementId.ActionBar04, ConfigElementSetting.Show },
                     { ConfigElementId.CrossHotbar, ConfigElementSetting.Show },
                     { ConfigElementId.Parameters, ConfigElementSetting.Show },
-                    { ConfigElementId.TargetInfo, ConfigElementSetting.Show },
                     { ConfigElementId.StatusEnhancements, ConfigElementSetting.Show },
                     { ConfigElementId.Job, ConfigElementSetting.Show },
                 };
@@ -60,7 +58,6 @@ namespace FaderPlugin.Config
                     { ConfigElementId.ActionBar04, ConfigElementSetting.Show },
                     { ConfigElementId.CrossHotbar, ConfigElementSetting.Show },
                     { ConfigElementId.Parameters, ConfigElementSetting.Show },
-                    { ConfigElementId.TargetInfo, ConfigElementSetting.Show },
                     { ConfigElementId.StatusEnhancements, ConfigElementSetting.Show },
                     { ConfigElementId.Job, ConfigElementSetting.Show },
                 };
@@ -73,7 +70,6 @@ namespace FaderPlugin.Config
                     { ConfigElementId.ActionBar04, ConfigElementSetting.Show },
                     { ConfigElementId.CrossHotbar, ConfigElementSetting.Show },
                     { ConfigElementId.Parameters, ConfigElementSetting.Show },
-                    { ConfigElementId.TargetInfo, ConfigElementSetting.Show },
                     { ConfigElementId.StatusEnhancements, ConfigElementSetting.Show },
                     { ConfigElementId.Job, ConfigElementSetting.Show },
                 };
@@ -86,7 +82,6 @@ namespace FaderPlugin.Config
                     { ConfigElementId.ActionBar04, ConfigElementSetting.Show },
                     { ConfigElementId.CrossHotbar, ConfigElementSetting.Show },
                     { ConfigElementId.Parameters, ConfigElementSetting.Show },
-                    { ConfigElementId.TargetInfo, ConfigElementSetting.Hide },
                     { ConfigElementId.StatusEnhancements, ConfigElementSetting.Show },
                     { ConfigElementId.Job, ConfigElementSetting.Show },
                 };
@@ -145,39 +140,38 @@ namespace FaderPlugin.Config
 
             return name switch
             {
-                "_ActionBar"            => ConfigElementId.ActionBar01,
-                "_ActionBar01"          => ConfigElementId.ActionBar02,
-                "_ActionBar02"          => ConfigElementId.ActionBar03,
-                "_ActionBar03"          => ConfigElementId.ActionBar04,
-                "_ActionBar04"          => ConfigElementId.ActionBar05,
-                "_ActionBar05"          => ConfigElementId.ActionBar06,
-                "_ActionBar06"          => ConfigElementId.ActionBar07,
-                "_ActionBar07"          => ConfigElementId.ActionBar08,
-                "_ActionBar08"          => ConfigElementId.ActionBar09,
-                "_ActionBar09"          => ConfigElementId.ActionBar10,
-                "_ActionCross"          => ConfigElementId.CrossHotbar,
-                "_ActionDoubleCrossL"   => ConfigElementId.CrossHotbar,
-                "_ActionDoubleCrossR"   => ConfigElementId.CrossHotbar,
-                "_PartyList"            => ConfigElementId.PartyList,
-                "_LimitBreak"           => ConfigElementId.LimitBreak,
-                "_ParameterWidget"      => ConfigElementId.Parameters,
-                "_TargetInfo"           => ConfigElementId.TargetInfo,
+                "_ActionBar"          => ConfigElementId.ActionBar01,
+                "_ActionBar01"        => ConfigElementId.ActionBar02,
+                "_ActionBar02"        => ConfigElementId.ActionBar03,
+                "_ActionBar03"        => ConfigElementId.ActionBar04,
+                "_ActionBar04"        => ConfigElementId.ActionBar05,
+                "_ActionBar05"        => ConfigElementId.ActionBar06,
+                "_ActionBar06"        => ConfigElementId.ActionBar07,
+                "_ActionBar07"        => ConfigElementId.ActionBar08,
+                "_ActionBar08"        => ConfigElementId.ActionBar09,
+                "_ActionBar09"        => ConfigElementId.ActionBar10,
+                "_ActionCross"        => ConfigElementId.CrossHotbar,
+                "_ActionDoubleCrossL" => ConfigElementId.CrossHotbar,
+                "_ActionDoubleCrossR" => ConfigElementId.CrossHotbar,
+                "_PartyList"          => ConfigElementId.PartyList,
+                "_LimitBreak"         => ConfigElementId.LimitBreak,
+                "_ParameterWidget"    => ConfigElementId.Parameters,
+                "_Status"             => ConfigElementId.Status,
+                "_StatusCustom0"      => ConfigElementId.StatusEnhancements,
+                "_StatusCustom1"      => ConfigElementId.StatusEnfeeblements,
+                "_StatusCustom2"      => ConfigElementId.StatusOther,
+                "_CastBar"            => ConfigElementId.CastBar,
+                "_Exp"                => ConfigElementId.ExperienceBar,
+                "ScenarioTree"        => ConfigElementId.ScenarioGuide,
+                "_BagWidget"          => ConfigElementId.InventoryGrid,
+                "_MainCommand"        => ConfigElementId.MainMenu,
+                "_NaviMap"            => ConfigElementId.Minimap,
+                "_Money"              => ConfigElementId.Currency,
+
+                "_TargetInfoMainTarget" => ConfigElementId.TargetInfo,
                 "_TargetInfoBuffDebuff" => ConfigElementId.TargetInfo,
                 "_TargetInfoCastBar"    => ConfigElementId.TargetInfo,
-                "_TargetInfoMainTarget" => ConfigElementId.TargetInfo,
-                "_Status"               => ConfigElementId.Status,
-                "_StatusCustom0"        => ConfigElementId.StatusEnhancements,
-                "_StatusCustom1"        => ConfigElementId.StatusEnfeeblements,
-                "_StatusCustom2"        => ConfigElementId.StatusOther,
-                "_CastBar"              => ConfigElementId.CastBar,
-                "_Exp"                  => ConfigElementId.ExperienceBar,
-                "ScenarioTree"          => ConfigElementId.ScenarioGuide,
-                "_BagWidget"            => ConfigElementId.InventoryGrid,
-                "_ToDoList"             => ConfigElementId.QuestLog,
-                "_MainCommand"          => ConfigElementId.MainMenu,
-                "_NaviMap"              => ConfigElementId.Minimap,
-                "_Money"                => ConfigElementId.Currency,
-                "NamePlate"             => ConfigElementId.Nameplates,
+                "_TargetInfo"           => ConfigElementId.TargetInfo,
 
                 _ => ConfigElementId.Unknown,
             };
