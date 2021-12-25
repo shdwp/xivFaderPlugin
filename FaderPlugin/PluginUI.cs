@@ -85,7 +85,7 @@ namespace FaderPlugin
                 }
                 ImGui.SameLine();
                 ImGui.Text("Always User Focus when hotbars are unlocked");
-                ImGuiHelpTooltip("When hotbars are unlocked always setup to the UserFocus column.");
+                ImGuiHelpTooltip("When hotbars or crossbars are unlocked always setup to the UserFocus column.");
 
                 var idleDelay = (float)TimeSpan.FromMilliseconds(configuration.IdleTransitionDelay).TotalSeconds;
                 ImGui.Text("Idle transition delay:");
