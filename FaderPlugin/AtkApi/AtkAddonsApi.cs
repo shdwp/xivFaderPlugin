@@ -10,7 +10,8 @@ namespace FaderPlugin.AtkApi
         private readonly AtkStage* _stage;
         private readonly GameGui   _gameGui;
 
-        private IntPtr _addon;
+        private IntPtr _hotbar;
+        private IntPtr _crossbar;
 
         public AtkAddonsApi(GameGui gameGui)
         {
@@ -20,15 +21,29 @@ namespace FaderPlugin.AtkApi
 
         public bool AreHotbarsLocked()
         {
-            if (_addon == IntPtr.Zero)
+            if (_hotbar == IntPtr.Zero)
             {
-                _addon = _gameGui.GetAddonByName("_ActionBar", 1);
+                _hotbar = _gameGui.GetAddonByName("_ActionBar", 1);
+            }
+
+            if (_crossbar == IntPtr.Zero)
+            {
+                _crossbar = _gameGui.GetAddonByName("_ActionCross", 1);
             }
 
             try
             {
+                // here we check whether Mouse Mode or Gamepad Mode is enabled
+                var mouseModeEnabled = Marshal.ReadByte(_hotbar, 0x1d6) == 0;
 
-                return Marshal.ReadByte(_addon, 0x23f) != 0;
+                if (mouseModeEnabled == true)
+                {
+                    return Marshal.ReadByte(_hotbar, 0x23f) != 0;
+                }
+                else
+                {
+                    return Marshal.ReadByte(_crossbar, 0x23f) != 0;
+                }
             }
             catch (AccessViolationException)
             {
