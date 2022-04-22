@@ -77,7 +77,6 @@ namespace FaderPlugin
             this.CommandManager.RemoveHandler(commandName);
 
             this._ui.Dispose();
-            this.PluginInterface.Dispose();
 
             this.pendingTimer.Elapsed -= TransitionToPendingState;
             this.pendingTimer.Dispose();
