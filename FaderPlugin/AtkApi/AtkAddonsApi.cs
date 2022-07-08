@@ -16,7 +16,7 @@ namespace FaderPlugin.AtkApi
         public AtkAddonsApi(GameGui gameGui)
         {
             _gameGui = gameGui;
-            this._stage = AtkStage.GetSingleton();
+            _stage = AtkStage.GetSingleton();
         }
 
         public bool AreHotbarsLocked()

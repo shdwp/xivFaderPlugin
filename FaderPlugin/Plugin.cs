@@ -6,11 +6,12 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
-using Dalamud.Plugin;
 using Dalamud.IoC;
 using Dalamud.Logging;
+using Dalamud.Plugin;
 using FaderPlugin.Config;
 using FFXIVClientStructs;
+using Timer = System.Timers.Timer;
 
 namespace FaderPlugin
 {
@@ -77,7 +78,6 @@ namespace FaderPlugin
             this.CommandManager.RemoveHandler(commandName);
 
             this._ui.Dispose();
-            this.PluginInterface.Dispose();
 
             this.pendingTimer.Elapsed -= TransitionToPendingState;
             this.pendingTimer.Dispose();
