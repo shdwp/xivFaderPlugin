@@ -10,6 +10,7 @@
         HasNPCTarget,
         Crafting,
         Gathering,
+        Mounted,
         Combat,
         ChatFocus,
         UserFocus,
