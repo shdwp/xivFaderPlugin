@@ -311,6 +311,7 @@ namespace FaderPlugin
             {
                 ConfigElementId.Chat =>
                     "Should be always visible if focused, albeit feature can be buggy with some configurations",
+                ConfigElementId.PetBar => "Pet and mount actions",
                 ConfigElementId.Job => "Job-specific UI",
                 ConfigElementId.Status => "Player status (when not split into 3 separate elements)",
                 ConfigElementId.StatusEnfeeblements => "Player enfeeblements (when split into 3 separate elements)",

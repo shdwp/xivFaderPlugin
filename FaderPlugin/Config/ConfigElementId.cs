@@ -15,6 +15,7 @@
         ActionBar09,
         ActionBar10,
         CrossHotbar,
+        PetBar,
 
         Job,
         CastBar,
