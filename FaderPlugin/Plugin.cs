@@ -251,7 +251,7 @@ namespace FaderPlugin
                     ConfigElementSetting.Skip => null,
                     _                         => null,
                 };
-            });
+            }, this._configuration.PreventHiddenInteraction);
         }
     }
 }
