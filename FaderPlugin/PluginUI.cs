@@ -156,6 +156,16 @@ namespace FaderPlugin
                 ImGui.Text("Always User Focus when hotbars are unlocked");
                 ImGuiHelpTooltip("When hotbars or crossbars are unlocked always setup to the UserFocus column.");
 
+                var preventHiddenInteraction = configuration.PreventHiddenInteraction;
+                if(ImGui.Checkbox("##prevent_hidden_interaction", ref preventHiddenInteraction)) {
+                    this.configuration.PreventHiddenInteraction = preventHiddenInteraction;
+                    this.configuration.Save();
+                }
+
+                ImGui.SameLine();
+                ImGui.Text("Prevent interaction with hidden elements");
+                ImGuiHelpTooltip("Moves elements offscreen when hidden to prevent interaction. It is recommended you backup your layout before enabling this.");
+
                 var idleDelay = (float)TimeSpan.FromMilliseconds(configuration.IdleTransitionDelay).TotalSeconds;
                 ImGui.Text("Idle transition delay:");
                 ImGui.SameLine();

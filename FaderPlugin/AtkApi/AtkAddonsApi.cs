@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Gui;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -12,6 +13,8 @@ namespace FaderPlugin.AtkApi
 
         private IntPtr _hotbar;
         private IntPtr _crossbar;
+
+        private Dictionary<string, (short, short)> storedPositions = new Dictionary<string, (short, short)>();
 
         public AtkAddonsApi(GameGui gameGui)
         {
@@ -56,7 +59,7 @@ namespace FaderPlugin.AtkApi
             return CheckIfFocused("ChatLog");
         }
 
-        public void UpdateAddonVisibility(Func<string, bool?> predicate)
+        public void UpdateAddonVisibility(Func<string, bool?> predicate, bool moveElementOffscreen = false)
         {
             var loadedUnitsList = &this._stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
             var addonList = &loadedUnitsList->AtkUnitEntries;
@@ -73,9 +76,17 @@ namespace FaderPlugin.AtkApi
                     {
                         if (value.Value)
                         {
-                            if (addon->UldManager.NodeListCount == 0)
-                            {
+                            if (addon->UldManager.NodeListCount == 0) {
                                 addon->UldManager.UpdateDrawNodeList();
+                            }
+
+                            // Restore the elements position on screen.
+                            (short,short) position;
+                            bool positionExists = this.storedPositions.TryGetValue(name, out position);
+
+                            if(positionExists) {
+                                var (x, y) = position;
+                                addon->SetPosition(x,y);
                             }
                         }
                         else
@@ -83,6 +94,16 @@ namespace FaderPlugin.AtkApi
                             if (addon->UldManager.NodeListCount != 0)
                             {
                                 addon->UldManager.NodeListCount = 0;
+                            }
+
+                            // Store the position prior to hiding the element.
+                            if(addon->X != -9999) {
+                                this.storedPositions[name] = (addon->X, addon->Y);
+                            }
+
+                            if(moveElementOffscreen) { 
+                                // Move the element off screen so it can't be interacted with.
+                                addon->SetPosition(-9999,-9999);
                             }
                         }
                     }
