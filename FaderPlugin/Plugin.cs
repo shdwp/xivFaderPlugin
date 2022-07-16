@@ -3,6 +3,7 @@ using Dalamud.Game;
 using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
+using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
@@ -39,6 +40,7 @@ namespace FaderPlugin
         [PluginService] private CommandManager         CommandManager  { get; set; }
         [PluginService] private ChatGui                ChatGui         { get; set; }
         [PluginService] private GameGui                GameGui         { get; set; }
+        [PluginService] private TargetManager          TargetManager   { get; set; }
 
         public Plugin()
         {
@@ -125,6 +127,8 @@ namespace FaderPlugin
                 return;
             }
 
+            var target = TargetManager?.Target;
+
             if (this.KeyState[this._configuration.OverrideKey])
             {
                 ScheduleTransition(FaderState.UserFocus);
@@ -141,15 +145,15 @@ namespace FaderPlugin
             {
                 ScheduleTransition(FaderState.Combat);
             }
-            else if (this.ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.BattleNpc)
+            else if (target?.ObjectKind == ObjectKind.BattleNpc)
             {
                 ScheduleTransition(FaderState.HasEnemyTarget);
             }
-            else if (this.ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.Player)
+            else if (target?.ObjectKind == ObjectKind.Player)
             {
                 ScheduleTransition(FaderState.HasPlayerTarget);
             }
-            else if (this.ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.EventNpc)
+            else if (target?.ObjectKind == ObjectKind.EventNpc)
             {
                 ScheduleTransition(FaderState.HasNPCTarget);
             }
