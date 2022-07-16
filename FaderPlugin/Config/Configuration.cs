@@ -10,11 +10,12 @@ namespace FaderPlugin.Config
     {
         public event Action OnSaved;
 
-        public int                                                                       Version              { get; set; } = 4;
-        public Dictionary<FaderState, Dictionary<ConfigElementId, ConfigElementSetting>> ElementsTable        { get; set; }
-        public long                                                                      IdleTransitionDelay  { get; set; } = 2000;
-        public int                                                                       OverrideKey          { get; set; } = 0x12;
-        public bool                                                                      FocusOnHotbarsUnlock { get; set; } = false;
+        public int                                                                       Version                  { get; set; } = 4;
+        public Dictionary<FaderState, Dictionary<ConfigElementId, ConfigElementSetting>> ElementsTable            { get; set; }
+        public long                                                                      IdleTransitionDelay      { get; set; } = 2000;
+        public int                                                                       OverrideKey              { get; set; } = 0x12;
+        public bool                                                                      FocusOnHotbarsUnlock     { get; set; } = false;
+        public bool                                                                      PreventHiddenInteraction { get; set; } = false;
 
         [NonSerialized]
         private DalamudPluginInterface pluginInterface;
