@@ -9,7 +9,7 @@ namespace FaderPlugin.AtkApi
     public sealed unsafe class AtkAddonsApi
     {
         private readonly AtkStage* _stage;
-        private readonly GameGui   _gameGui;
+        private readonly GameGui _gameGui;
 
         private IntPtr _hotbar;
         private IntPtr _crossbar;
@@ -72,39 +72,45 @@ namespace FaderPlugin.AtkApi
                 if (name != null)
                 {
                     var value = predicate(name);
-                    if (value.HasValue)
+                    if (value == true)
                     {
-                        if (value.Value)
+                        if (!moveElementOffscreen)
                         {
-                            if (addon->UldManager.NodeListCount == 0) {
+                            if (addon->UldManager.NodeListCount == 0)
+                            {
                                 addon->UldManager.UpdateDrawNodeList();
-                            }
-
-                            // Restore the elements position on screen.
-                            (short,short) position;
-                            bool positionExists = this.storedPositions.TryGetValue(name, out position);
-
-                            if(positionExists) {
-                                var (x, y) = position;
-                                addon->SetPosition(x,y);
                             }
                         }
                         else
+                        {
+                            // Restore the elements position on screen.
+                            bool positionExists = this.storedPositions.TryGetValue(name, out var position);
+                            if (positionExists && addon->X == -9999)
+                            {
+                                var (x, y) = position;
+                                addon->SetPosition(x, y);
+                            }
+                        }
+                    }
+                    else if (value == false)
+                    {
+                        if (!moveElementOffscreen)
                         {
                             if (addon->UldManager.NodeListCount != 0)
                             {
                                 addon->UldManager.NodeListCount = 0;
                             }
-
+                        }
+                        else
+                        {
                             // Store the position prior to hiding the element.
-                            if(addon->X != -9999) {
+                            if (addon->X != -9999)
+                            {
                                 this.storedPositions[name] = (addon->X, addon->Y);
                             }
 
-                            if(moveElementOffscreen) { 
-                                // Move the element off screen so it can't be interacted with.
-                                addon->SetPosition(-9999,-9999);
-                            }
+                            // Move the element off screen so it can't be interacted with.
+                            addon->SetPosition(-9999, -9999);
                         }
                     }
                 }

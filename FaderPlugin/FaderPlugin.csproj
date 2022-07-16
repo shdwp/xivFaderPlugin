@@ -2,20 +2,20 @@
 
  <PropertyGroup>
   <TargetFramework>net5.0</TargetFramework>
-  <ImplicitUsings>enable</ImplicitUsings>
   <Nullable>enable</Nullable>
   <RootNamespace>FaderPlugin</RootNamespace>
-  <AssemblyVersion>1.0.3</AssemblyVersion>
-  <FileVersion>1.0.3</FileVersion>
+  <AssemblyVersion>1.1.0</AssemblyVersion>
+  <FileVersion>1.1.0</FileVersion>
+  <LangVersion>10</LangVersion>
  </PropertyGroup>
 
  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-   <OutputPath>C:\Users\shdwp\AppData\Roaming\XIVLauncher\devPlugins\FaderPlugin\</OutputPath>
+   <OutputPath></OutputPath>
    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
  </PropertyGroup>
 
  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-   <OutputPath>C:\Users/shdwp\AppData\Roaming\XIVLauncher\devPlugins\FaderPlugin\</OutputPath>
+   <OutputPath></OutputPath>
    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
  </PropertyGroup>
 
@@ -39,7 +39,7 @@
  </ItemGroup>
 
  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-   <Exec Command="copy $(TargetDir)\FaderPlugin.dll $(TargetDir)\..&#xA;copy $(TargetDir)\Data\FaderPlugin.json $(TargetDir)\..&#xA;" />
+   <Exec Command="copy $(TargetDir)\FaderPlugin.dll %APPDATA%\XivLauncher\devPlugins\faderPlugin\&#xA;copy $(TargetDir)\Data\FaderPlugin.json %APPDATA%\XivLauncher\devPlugins\faderPlugin\" />
  </Target>
 
 </Project>
