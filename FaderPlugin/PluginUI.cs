@@ -302,6 +302,7 @@ namespace FaderPlugin
             return state switch
             {
                 FaderState.Combat => "In combat",
+                FaderState.Mounted => "When mounted",
                 FaderState.Crafting => "Crafting an item",
                 FaderState.Duty => "In instanced duty",
                 FaderState.Gathering => "Gathering a node",

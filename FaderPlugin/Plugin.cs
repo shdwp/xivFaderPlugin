@@ -145,7 +145,11 @@ namespace FaderPlugin
             {
                 ScheduleTransition(FaderState.Combat);
             }
+            else if(this.Condition[ConditionFlag.Mounted] || this.Condition[ConditionFlag.Mounted2]) {
+                ScheduleTransition(FaderState.Mounted);
+            }
             else if (target?.ObjectKind == ObjectKind.BattleNpc)
+
             {
                 ScheduleTransition(FaderState.HasEnemyTarget);
             }
@@ -183,6 +187,7 @@ namespace FaderPlugin
                 (state == FaderState.Crafting
                  || state == FaderState.Gathering
                  || state == FaderState.Combat
+                 || state == FaderState.Mounted
                  || state == FaderState.HasEnemyTarget
                  || state == FaderState.HasPlayerTarget
                  || state == FaderState.HasNPCTarget
