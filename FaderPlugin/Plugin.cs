@@ -252,8 +252,14 @@ namespace FaderPlugin
                     return true;
                 }
 
-                var value = this._configuration.GetSetting(element, this.currentState);
-                return value switch
+                var setting = this._configuration.GetSetting(element, this.currentState);
+
+                // If an element is set to skip while in a duty fallback to idle state.
+                if(setting == ConfigElementSetting.Skip && this.currentState == FaderState.Duty) {
+                    setting = this._configuration.GetSetting(element, FaderState.Idle);
+                }
+
+                return setting switch
                 {
                     ConfigElementSetting.Show => true,
                     ConfigElementSetting.Hide => false,
