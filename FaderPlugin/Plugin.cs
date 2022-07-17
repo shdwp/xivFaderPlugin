@@ -1,4 +1,5 @@
-﻿using System.Timers;
+﻿using System;
+using System.Collections.Generic;
 using Dalamud.Game;
 using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Conditions;
@@ -7,251 +8,178 @@ using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.IoC;
-using Dalamud.Logging;
 using Dalamud.Plugin;
 using FaderPlugin.Config;
 using FFXIVClientStructs;
-using Timer = System.Timers.Timer;
 
-namespace FaderPlugin
-{
-    public class Plugin : IDalamudPlugin
-    {
+namespace FaderPlugin {
+    public class Plugin : IDalamudPlugin {
         public string Name => "Fader Plugin";
 
-        private readonly Configuration       _configuration;
-        private readonly PluginUI            _ui;
-        private readonly AtkApi.AtkAddonsApi _atkAddonsApi;
+        private readonly Configuration config;
+        private readonly PluginUI ui;
+        private readonly AtkApi.AtkAddonsApi atkAddonsApi;
 
-        private FaderState currentState = FaderState.None;
-        private FaderState pendingState = FaderState.None;
-        private Timer      pendingTimer;
-        private Timer      maintanceTimer;
+        private readonly Dictionary<State, bool> stateMap = new();
+        private bool stateChanged = false;
 
-        private string commandName = "/pfader";
-        private bool   enabled     = true;
+        private readonly string commandName = "/pfader";
+        private bool enabled = true;
 
-        [PluginService] private DalamudPluginInterface PluginInterface { get; set; }
-        [PluginService] private KeyState               KeyState        { get; set; }
-        [PluginService] private Framework              Framework       { get; set; }
-        [PluginService] private ClientState            ClientState     { get; set; }
-        [PluginService] private Condition              Condition       { get; set; }
-        [PluginService] private CommandManager         CommandManager  { get; set; }
-        [PluginService] private ChatGui                ChatGui         { get; set; }
-        [PluginService] private GameGui                GameGui         { get; set; }
+        [PluginService] public static DalamudPluginInterface PluginInterface { get; set; }
+        [PluginService] public static KeyState KeyState { get; set; }
+        [PluginService] public static Framework Framework { get; set; }
+        [PluginService] public static ClientState ClientState { get; set; }
+        [PluginService] public static Condition Condition { get; set; }
+        [PluginService] public static CommandManager CommandManager { get; set; }
+        [PluginService] public static ChatGui ChatGui { get; set; }
+        [PluginService] public static GameGui GameGui { get; set; }
 
-        public Plugin()
-        {
+        public Plugin() {
             Resolver.Initialize();
 
-            this._atkAddonsApi = new AtkApi.AtkAddonsApi(GameGui);
+            atkAddonsApi = new AtkApi.AtkAddonsApi(GameGui);
 
-            this._configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-            this._configuration.Initialize(PluginInterface);
-            this._configuration.OnSaved += OnConfigurationSaved;
+            LoadConfig(out config);
+            config.OnSave += UpdateAddonVisibility;
 
-            this.pendingTimer = new Timer();
-            this.pendingTimer.Interval = this._configuration.IdleTransitionDelay;
+            ui = new PluginUI(config);
 
-            this.maintanceTimer = new Timer();
-            this.maintanceTimer.Interval = 1000;
-            this.maintanceTimer.AutoReset = true;
-            this.maintanceTimer.Start();
+            Framework.Update += OnFrameworkUpdate;
+            PluginInterface.UiBuilder.Draw += ui.Draw;
+            PluginInterface.UiBuilder.OpenConfigUi += () => ui.SettingsVisible = true;
 
-            this._ui = new PluginUI(this._configuration);
-
-            this.pendingTimer.Elapsed += TransitionToPendingState;
-            this.maintanceTimer.Elapsed += UpdateAddonVisibilityBasedOnCurrentState;
-
-            this.Framework.Update += OnFrameworkUpdate;
-            this.PluginInterface.UiBuilder.Draw += this._ui.Draw;
-            this.PluginInterface.UiBuilder.OpenConfigUi += () => this._ui.SettingsVisible = true;
-
-            this.CommandManager.AddHandler(commandName, new CommandInfo(FaderCommandHandler)
-            {
+            CommandManager.AddHandler(commandName, new CommandInfo(FaderCommandHandler) {
                 HelpMessage = "Opens settings, /pfader t toggles whether it's enabled."
             });
+
+            foreach(State state in Enum.GetValues(typeof(State))) {
+                stateMap[state] = state == State.Default ? true : false;
+            }
         }
 
-        public void Dispose()
-        {
-            this.CommandManager.RemoveHandler(commandName);
+        private void LoadConfig(out Configuration config) {
+            var existingConfig = PluginInterface.GetPluginConfig();
 
-            this._ui.Dispose();
+            if(existingConfig?.Version == 5) {
+                config = existingConfig as Configuration;
+            } else {
+                config = new();
+            }
 
-            this.pendingTimer.Elapsed -= TransitionToPendingState;
-            this.pendingTimer.Dispose();
-
-            this.maintanceTimer.Elapsed -= UpdateAddonVisibilityBasedOnCurrentState;
-            this.maintanceTimer.Dispose();
-
-            this.Framework.Update -= OnFrameworkUpdate;
-            this._atkAddonsApi.UpdateAddonVisibility(_ => true);
+            config.Initialize();
         }
 
-        private void FaderCommandHandler(string s, string arguments)
-        {
+        public void Dispose() {
+            config.OnSave -= UpdateAddonVisibility;
+            ui.Dispose();
+            Framework.Update -= OnFrameworkUpdate;
+            CommandManager.RemoveHandler(commandName);
+            atkAddonsApi.UpdateAddonVisibility(_ => true);
+        }
+
+        private void FaderCommandHandler(string s, string arguments) {
             arguments = arguments.Trim();
-            if (arguments == "t" || arguments == "toggle")
-            {
+            if(arguments == "t" || arguments == "toggle") {
                 enabled = !enabled;
                 var state = enabled ? "enabled" : "disabled";
-                this.ChatGui.Print($"Fader plugin {state}.");
-            }
-            else if (arguments == "dbg")
-            {
-                this._atkAddonsApi.UpdateAddonVisibility((name) =>
-                {
-                    this.ChatGui.Print(name);
+                ChatGui.Print($"Fader plugin {state}.");
+            } else if(arguments == "dbg") {
+                atkAddonsApi.UpdateAddonVisibility((name) => {
+                    ChatGui.Print(name);
                     return null;
                 });
-            }
-            else if (arguments == "")
-            {
-                this._ui.SettingsVisible = true;
+            } else if(arguments == "") {
+                ui.SettingsVisible = true;
             }
         }
 
-        private void OnConfigurationSaved()
-        {
-            this.pendingTimer.Interval = this._configuration.IdleTransitionDelay;
-        }
-
-        private void OnFrameworkUpdate(Framework framework)
-        {
-            if (this.Condition[ConditionFlag.BetweenAreas] || !this.ClientState.IsLoggedIn)
-            {
-                // client weirds out if you mess with addons during loading
+        private void OnFrameworkUpdate(Framework framework) {
+            if(!IsSafeToWork()) {
                 return;
             }
 
-            if (this.KeyState[this._configuration.OverrideKey])
-            {
-                ScheduleTransition(FaderState.UserFocus);
-            }
-            else if (this._configuration.FocusOnHotbarsUnlock && !this._atkAddonsApi.AreHotbarsLocked())
-            {
-                ScheduleTransition(FaderState.UserFocus);
-            }
-            else if (this._atkAddonsApi.IsChatFocused())
-            {
-                ScheduleTransition(FaderState.ChatFocus);
-            }
-            else if (this.Condition[ConditionFlag.InCombat])
-            {
-                ScheduleTransition(FaderState.Combat);
-            }
-            else if (this.ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.BattleNpc)
-            {
-                ScheduleTransition(FaderState.HasEnemyTarget);
-            }
-            else if (this.ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.Player)
-            {
-                ScheduleTransition(FaderState.HasPlayerTarget);
-            }
-            else if (this.ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.EventNpc)
-            {
-                ScheduleTransition(FaderState.HasNPCTarget);
-            }
-            else if (this.Condition[ConditionFlag.Gathering])
-            {
-                ScheduleTransition(FaderState.Gathering);
-            }
-            else if (this.Condition[ConditionFlag.Crafting])
-            {
-                ScheduleTransition(FaderState.Crafting);
-            }
-            else if (this.Condition[ConditionFlag.BoundByDuty])
-            {
-                ScheduleTransition(FaderState.Duty);
-            }
-            else
-            {
-                ScheduleTransition(FaderState.Idle);
+            stateChanged = false;
+
+            // User Focus
+            UpdateStateMap(State.UserFocus, KeyState[config.OverrideKey] || (config.FocusOnHotbarsUnlock && !atkAddonsApi.AreHotbarsLocked()));
+
+            // Chat Focus
+            UpdateStateMap(State.ChatFocus, atkAddonsApi.IsChatFocused());
+
+            // Combat
+            UpdateStateMap(State.Combat, Condition[ConditionFlag.InCombat]);
+
+            // Enemy Target
+            UpdateStateMap(State.EnemyTarget, ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.BattleNpc);
+
+            // Player Target
+            UpdateStateMap(State.PlayerTarget, ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.Player);
+
+            // NPC Target
+            UpdateStateMap(State.NPCTarget, ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.EventNpc);
+
+            // Gathering 
+            UpdateStateMap(State.Gathering, Condition[ConditionFlag.Gathering]);
+
+            // Gathering 
+            UpdateStateMap(State.Crafting, Condition[ConditionFlag.Crafting]);
+
+            // Duty
+            UpdateStateMap(State.Duty, Condition[ConditionFlag.BoundByDuty]);
+
+            // Only update display state if a state has changed.
+            if(stateChanged) {
+                UpdateAddonVisibility();
             }
         }
 
-        private void ScheduleTransition(FaderState state)
-        {
-            if (
-                currentState != state
-                &&
-                (state == FaderState.Crafting
-                 || state == FaderState.Gathering
-                 || state == FaderState.Combat
-                 || state == FaderState.HasEnemyTarget
-                 || state == FaderState.HasPlayerTarget
-                 || state == FaderState.HasNPCTarget
-                 || state == FaderState.ChatFocus
-                 || state == FaderState.UserFocus)
-            )
-            {
-                PluginLog.Debug($"Immediate transition from {currentState} to {state}");
-
-                pendingTimer.Stop();
-                MoveToState(state);
-            }
-            else if (pendingState != state)
-            {
-                PluginLog.Debug($"Pending transition from {currentState} to {state}");
-
-                pendingTimer.Stop();
-                pendingState = state;
-                pendingTimer.Start();
+        private void UpdateStateMap(State state, bool value) {
+            if(stateMap[state] != value) {
+                stateMap[state] = value;
+                stateChanged = true;
             }
         }
 
-        private void TransitionToPendingState(object sender, ElapsedEventArgs e)
-        {
-            if (pendingState != currentState)
-            {
-                pendingTimer.Stop();
-                MoveToState(pendingState);
-            }
-        }
-
-        private void MoveToState(FaderState newState)
-        {
-            this.currentState = newState;
-
-            UpdateAddonVisibilityBasedOnCurrentState();
-        }
-
-        private void UpdateAddonVisibilityBasedOnCurrentState(object sender, ElapsedEventArgs e)
-        {
-            UpdateAddonVisibilityBasedOnCurrentState();
-        }
-
-        private void UpdateAddonVisibilityBasedOnCurrentState()
-        {
-            if (this.Condition[ConditionFlag.BetweenAreas] || !this.ClientState.IsLoggedIn)
-            {
-                // client weirds out if you mess with addons during loading
+        private void UpdateAddonVisibility() {
+            if(!IsSafeToWork()) {
                 return;
             }
 
-            this._atkAddonsApi.UpdateAddonVisibility(addonName =>
-            {
-                var element = this._configuration.ConfigElementByName(addonName);
-                if (element == ConfigElementId.Unknown)
-                {
-                    return null;
-                }
-
-                if (!enabled)
-                {
+            atkAddonsApi.UpdateAddonVisibility(addonName => {
+                if(!enabled) {
                     return true;
                 }
 
-                var value = this._configuration.GetSetting(element, this.currentState);
-                return value switch
-                {
-                    ConfigElementSetting.Show => true,
-                    ConfigElementSetting.Hide => false,
-                    ConfigElementSetting.Skip => null,
-                    _                         => null,
+                Element element = config.ConfigElementByName(addonName);
+                if(element == Element.Unknown) {
+                    return null;
+                }
+
+                List<ConfigEntry> elementConfig = config.GetElementConfig(element);
+
+                Setting setting = Setting.Show;
+
+                foreach(ConfigEntry entry in elementConfig) {
+                    if(stateMap[entry.state]) {
+                        setting = entry.setting;
+                        break;
+                    }
+                }
+
+                return setting switch {
+                    Setting.Show => true,
+                    Setting.Hide => false,
+                    _ => null,
                 };
             });
+        }
+
+        /// <summary>
+        /// Returns whether it is safe for the plugin to perform work, dependent on whether the game is on a login or loading screen.
+        /// </summary>
+        private bool IsSafeToWork() {
+            return !Condition[ConditionFlag.BetweenAreas] && ClientState.IsLoggedIn;
         }
     }
 }

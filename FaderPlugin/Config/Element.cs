@@ -1,0 +1,93 @@
+﻿namespace FaderPlugin.Config {
+    public enum Element {
+        Unknown = 0,
+
+        Hotbar1 = 100,
+        Hotbar2,
+        Hotbar3,
+        Hotbar4,
+        Hotbar5,
+        Hotbar6,
+        Hotbar7,
+        Hotbar8,
+        Hotbar9,
+        Hotbar10,
+        CrossHotbar,
+
+        Job,
+        CastBar,
+        ExperienceBar,
+        InventoryGrid,
+        Currency,
+        ScenarioGuide,
+        QuestLog,
+        MainMenu,
+        Chat,
+        Minimap,
+        Nameplates,
+
+        TargetInfo,
+        PartyList,
+        LimitBreak,
+        Parameters,
+        Status,
+        StatusEnhancements,
+        StatusEnfeeblements,
+        StatusOther,
+    }
+
+    public static class ElementUtil {
+        public static string GetElementName(Element element) {
+            switch(element) {
+                case Element.Hotbar1:
+                    return "Hotbar 1";
+                case Element.Hotbar2:
+                    return "Hotbar 2";
+                case Element.Hotbar3:
+                    return "Hotbar 3";
+                case Element.Hotbar4:
+                    return "Hotbar 4";
+                case Element.Hotbar5:
+                    return "Hotbar 5";
+                case Element.Hotbar6:
+                    return "Hotbar 6";
+                case Element.Hotbar7:
+                    return "Hotbar 7";
+                case Element.Hotbar8:
+                    return "Hotbar 8";
+                case Element.Hotbar9:
+                    return "Hotbar 9";
+                case Element.Hotbar10:
+                    return "Hotbar 10";
+                case Element.CrossHotbar:
+                    return "Cross Hotbar";
+                case Element.CastBar:
+                    return "Cast Bar";
+                case Element.ExperienceBar:
+                    return "Experience Bar";
+                case Element.InventoryGrid:
+                    return "Inventory Grid";
+                case Element.ScenarioGuide:
+                    return "Scenario Guide";
+                case Element.QuestLog:
+                    return "Quest Log";
+                case Element.MainMenu:
+                    return "Main Menu";
+                case Element.TargetInfo:
+                    return "Target Info";
+                case Element.PartyList:
+                    return "Party List";
+                case Element.LimitBreak:
+                    return "Limit Break";
+                case Element.StatusEnhancements:
+                    return "Status Enhancements";
+                case Element.StatusEnfeeblements:
+                    return "Status Enfeeblements";
+                case Element.StatusOther:
+                    return "Status Other";
+                default:
+                    return element.ToString();
+            }
+        }
+    }
+}

@@ -1,179 +1,99 @@
 ﻿using System;
 using System.Collections.Generic;
 using Dalamud.Configuration;
-using Dalamud.Plugin;
 
-namespace FaderPlugin.Config
-{
+namespace FaderPlugin.Config {
+
+    public class ConfigEntry {
+        public State state { get; set; }
+        public Setting setting { get; set; }
+
+        public ConfigEntry(State state, Setting setting) {
+            this.state = state;
+            this.setting = setting;
+        }
+    }
+
     [Serializable]
-    public class Configuration : IPluginConfiguration
-    {
-        public event Action OnSaved;
+    public class Configuration : IPluginConfiguration {
+        public event Action? OnSave;
 
-        public int                                                                       Version              { get; set; } = 4;
-        public Dictionary<FaderState, Dictionary<ConfigElementId, ConfigElementSetting>> ElementsTable        { get; set; }
-        public long                                                                      IdleTransitionDelay  { get; set; } = 2000;
-        public int                                                                       OverrideKey          { get; set; } = 0x12;
-        public bool                                                                      FocusOnHotbarsUnlock { get; set; } = false;
+        public int Version { get; set; } = 5;
+        public Dictionary<Element, List<ConfigEntry>> elementsConfig { get; set; }
+        public long IdleTransitionDelay { get; set; } = 2000;
+        public int OverrideKey { get; set; } = 0x12;
+        public bool FocusOnHotbarsUnlock { get; set; } = false;
 
-        [NonSerialized]
-        private DalamudPluginInterface pluginInterface;
+        public void Initialize() {
+            if(elementsConfig == null) {
+                elementsConfig = new Dictionary<Element, List<ConfigEntry>>();
 
-        public void Initialize(DalamudPluginInterface pluginInterface)
-        {
-            this.pluginInterface = pluginInterface;
-
-            if (ElementsTable == null)
-            {
-                ElementsTable = new Dictionary<FaderState, Dictionary<ConfigElementId, ConfigElementSetting>>();
-                ElementsTable[FaderState.Idle] = new Dictionary<ConfigElementId, ConfigElementSetting>
-                {
-                    { ConfigElementId.ActionBar01, ConfigElementSetting.Hide },
-                    { ConfigElementId.ActionBar02, ConfigElementSetting.Hide },
-                    { ConfigElementId.ActionBar03, ConfigElementSetting.Hide },
-                    { ConfigElementId.ActionBar04, ConfigElementSetting.Hide },
-                    { ConfigElementId.CrossHotbar, ConfigElementSetting.Hide },
-                    { ConfigElementId.Parameters, ConfigElementSetting.Hide },
-                    { ConfigElementId.StatusEnhancements, ConfigElementSetting.Hide },
-                    { ConfigElementId.Job, ConfigElementSetting.Hide },
-                };
-
-                ElementsTable[FaderState.Combat] = new Dictionary<ConfigElementId, ConfigElementSetting>
-                {
-                    { ConfigElementId.ActionBar01, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar02, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar03, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar04, ConfigElementSetting.Show },
-                    { ConfigElementId.CrossHotbar, ConfigElementSetting.Show },
-                    { ConfigElementId.Parameters, ConfigElementSetting.Show },
-                    { ConfigElementId.StatusEnhancements, ConfigElementSetting.Show },
-                    { ConfigElementId.Job, ConfigElementSetting.Show },
-                };
-
-                ElementsTable[FaderState.HasEnemyTarget] = new Dictionary<ConfigElementId, ConfigElementSetting>
-                {
-                    { ConfigElementId.ActionBar01, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar02, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar03, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar04, ConfigElementSetting.Show },
-                    { ConfigElementId.CrossHotbar, ConfigElementSetting.Show },
-                    { ConfigElementId.Parameters, ConfigElementSetting.Show },
-                    { ConfigElementId.StatusEnhancements, ConfigElementSetting.Show },
-                    { ConfigElementId.Job, ConfigElementSetting.Show },
-                };
-
-                ElementsTable[FaderState.UserFocus] = new Dictionary<ConfigElementId, ConfigElementSetting>
-                {
-                    { ConfigElementId.ActionBar01, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar02, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar03, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar04, ConfigElementSetting.Show },
-                    { ConfigElementId.CrossHotbar, ConfigElementSetting.Show },
-                    { ConfigElementId.Parameters, ConfigElementSetting.Show },
-                    { ConfigElementId.StatusEnhancements, ConfigElementSetting.Show },
-                    { ConfigElementId.Job, ConfigElementSetting.Show },
-                };
-
-                ElementsTable[FaderState.Crafting] = new Dictionary<ConfigElementId, ConfigElementSetting>
-                {
-                    { ConfigElementId.ActionBar01, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar02, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar03, ConfigElementSetting.Show },
-                    { ConfigElementId.ActionBar04, ConfigElementSetting.Show },
-                    { ConfigElementId.CrossHotbar, ConfigElementSetting.Show },
-                    { ConfigElementId.Parameters, ConfigElementSetting.Show },
-                    { ConfigElementId.StatusEnhancements, ConfigElementSetting.Show },
-                    { ConfigElementId.Job, ConfigElementSetting.Show },
-                };
+                foreach(Element element in Enum.GetValues(typeof(Element))) {
+                    List<ConfigEntry> entry = new() { new ConfigEntry(State.Default, Setting.Show) };
+                    elementsConfig[element] = entry;
+                }
             }
 
             Save();
         }
 
-        public ConfigElementSetting ShouldDisplayElement(string name, FaderState state)
-        {
-            var element = ConfigElementByName(name);
-            return GetSetting(element, state);
-        }
-
-        public ConfigElementSetting GetSetting(ConfigElementId id, FaderState state)
-        {
-            if (ElementsTable.TryGetValue(state, out var table))
-            {
-                if (table.TryGetValue(id, out var setting))
-                {
-                    return setting;
-                }
+        public List<ConfigEntry> GetElementConfig(Element elementId) {
+            if(!elementsConfig.ContainsKey(elementId)) {
+                elementsConfig[elementId] = new();
             }
 
-            return ConfigElementSetting.Skip;
+            return elementsConfig[elementId];
         }
 
-        public void SetSetting(ConfigElementId id, FaderState state, ConfigElementSetting setting)
-        {
-            if (!ElementsTable.TryGetValue(state, out var table))
-            {
-                table = new Dictionary<ConfigElementId, ConfigElementSetting>();
-                ElementsTable[state] = table;
-            }
-
-            table[id] = setting;
+        public void Save() {
+            Plugin.PluginInterface.SavePluginConfig(this);
+            OnSave?.Invoke();
         }
 
-        public void Save()
-        {
-            this.pluginInterface.SavePluginConfig(this);
-            OnSaved?.Invoke();
-        }
-
-        public ConfigElementId ConfigElementByName(string name)
-        {
-            if (name.StartsWith("JobHud"))
-            {
-                return ConfigElementId.Job;
+        public Element ConfigElementByName(string name) {
+            if(name.StartsWith("JobHud")) {
+                return Element.Job;
             }
 
-            if (name.StartsWith("ChatLog"))
-            {
-                return ConfigElementId.Chat;
+            if(name.StartsWith("ChatLog")) {
+                return Element.Chat;
             }
 
-            return name switch
-            {
-                "_ActionBar"          => ConfigElementId.ActionBar01,
-                "_ActionBar01"        => ConfigElementId.ActionBar02,
-                "_ActionBar02"        => ConfigElementId.ActionBar03,
-                "_ActionBar03"        => ConfigElementId.ActionBar04,
-                "_ActionBar04"        => ConfigElementId.ActionBar05,
-                "_ActionBar05"        => ConfigElementId.ActionBar06,
-                "_ActionBar06"        => ConfigElementId.ActionBar07,
-                "_ActionBar07"        => ConfigElementId.ActionBar08,
-                "_ActionBar08"        => ConfigElementId.ActionBar09,
-                "_ActionBar09"        => ConfigElementId.ActionBar10,
-                "_ActionCross"        => ConfigElementId.CrossHotbar,
-                "_ActionDoubleCrossL" => ConfigElementId.CrossHotbar,
-                "_ActionDoubleCrossR" => ConfigElementId.CrossHotbar,
-                "_PartyList"          => ConfigElementId.PartyList,
-                "_LimitBreak"         => ConfigElementId.LimitBreak,
-                "_ParameterWidget"    => ConfigElementId.Parameters,
-                "_Status"             => ConfigElementId.Status,
-                "_StatusCustom0"      => ConfigElementId.StatusEnhancements,
-                "_StatusCustom1"      => ConfigElementId.StatusEnfeeblements,
-                "_StatusCustom2"      => ConfigElementId.StatusOther,
-                "_CastBar"            => ConfigElementId.CastBar,
-                "_Exp"                => ConfigElementId.ExperienceBar,
-                "ScenarioTree"        => ConfigElementId.ScenarioGuide,
-                "_BagWidget"          => ConfigElementId.InventoryGrid,
-                "_MainCommand"        => ConfigElementId.MainMenu,
-                "_NaviMap"            => ConfigElementId.Minimap,
-                "_Money"              => ConfigElementId.Currency,
+            return name switch {
+                "_ActionBar" => Element.Hotbar1,
+                "_ActionBar01" => Element.Hotbar2,
+                "_ActionBar02" => Element.Hotbar3,
+                "_ActionBar03" => Element.Hotbar4,
+                "_ActionBar04" => Element.Hotbar5,
+                "_ActionBar05" => Element.Hotbar6,
+                "_ActionBar06" => Element.Hotbar7,
+                "_ActionBar07" => Element.Hotbar8,
+                "_ActionBar08" => Element.Hotbar9,
+                "_ActionBar09" => Element.Hotbar10,
+                "_ActionCross" => Element.CrossHotbar,
+                "_ActionDoubleCrossL" => Element.CrossHotbar,
+                "_ActionDoubleCrossR" => Element.CrossHotbar,
+                "_PartyList" => Element.PartyList,
+                "_LimitBreak" => Element.LimitBreak,
+                "_ParameterWidget" => Element.Parameters,
+                "_Status" => Element.Status,
+                "_StatusCustom0" => Element.StatusEnhancements,
+                "_StatusCustom1" => Element.StatusEnfeeblements,
+                "_StatusCustom2" => Element.StatusOther,
+                "_CastBar" => Element.CastBar,
+                "_Exp" => Element.ExperienceBar,
+                "ScenarioTree" => Element.ScenarioGuide,
+                "_BagWidget" => Element.InventoryGrid,
+                "_MainCommand" => Element.MainMenu,
+                "_NaviMap" => Element.Minimap,
+                "_Money" => Element.Currency,
 
-                "_TargetInfoMainTarget" => ConfigElementId.TargetInfo,
-                "_TargetInfoBuffDebuff" => ConfigElementId.TargetInfo,
-                "_TargetInfoCastBar"    => ConfigElementId.TargetInfo,
-                "_TargetInfo"           => ConfigElementId.TargetInfo,
+                "_TargetInfoMainTarget" => Element.TargetInfo,
+                "_TargetInfoBuffDebuff" => Element.TargetInfo,
+                "_TargetInfoCastBar" => Element.TargetInfo,
+                "_TargetInfo" => Element.TargetInfo,
 
-                _ => ConfigElementId.Unknown,
+                _ => Element.Unknown,
             };
         }
     }
