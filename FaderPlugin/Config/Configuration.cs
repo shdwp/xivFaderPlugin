@@ -25,10 +25,13 @@ namespace FaderPlugin.Config {
         public bool FocusOnHotbarsUnlock { get; set; } = false;
 
         public void Initialize() {
+            // Initialise the config.
             if(elementsConfig == null) {
                 elementsConfig = new Dictionary<Element, List<ConfigEntry>>();
+            }
 
-                foreach(Element element in Enum.GetValues(typeof(Element))) {
+            foreach(Element element in Enum.GetValues(typeof(Element))) {
+                if(!elementsConfig.ContainsKey(element)) {
                     List<ConfigEntry> entry = new() { new ConfigEntry(State.Default, Setting.Show) };
                     elementsConfig[element] = entry;
                 }
@@ -75,6 +78,7 @@ namespace FaderPlugin.Config {
                 "_ActionBar08" => Element.Hotbar9,
                 "_ActionBar09" => Element.Hotbar10,
                 "_ActionCross" => Element.CrossHotbar,
+                "_ActionBarEx" => Element.PetHotbar,
                 "_ActionDoubleCrossL" => Element.CrossHotbar,
                 "_ActionDoubleCrossR" => Element.CrossHotbar,
                 "_PartyList" => Element.PartyList,

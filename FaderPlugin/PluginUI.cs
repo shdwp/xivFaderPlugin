@@ -303,26 +303,11 @@ namespace FaderPlugin {
             }
         }
 
-        private string TooltipForState(State state) {
-            return state switch {
-                State.Combat => "In combat",
-                State.Crafting => "Crafting an item",
-                State.Duty => "In instanced duty",
-                State.Gathering => "Gathering a node",
-                State.ChatFocus => "When typing a message in chat",
-                State.UserFocus => "Focus button pressed",
-                State.EnemyTarget => "Targeting an enemy",
-                State.PlayerTarget => "Targeting a player",
-                State.NPCTarget => "Targeting a NPC",
-                State.Default => "When other conditions are not active",
-                _ => "No tooltip",
-            };
-        }
-
         private string TooltipForElement(Element elementId) {
             return elementId switch {
                 Element.Chat =>
                     "Should be always visible if focused, albeit feature can be buggy with some configurations",
+                Element.PetHotbar => "Pet and mount actions",
                 Element.Job => "Job-specific UI",
                 Element.Status => "Player status (when not split into 3 separate elements)",
                 Element.StatusEnfeeblements => "Player enfeeblements (when split into 3 separate elements)",

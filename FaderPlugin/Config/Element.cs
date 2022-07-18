@@ -13,6 +13,7 @@
         Hotbar9,
         Hotbar10,
         CrossHotbar,
+        PetHotbar,
 
         Job,
         CastBar,
