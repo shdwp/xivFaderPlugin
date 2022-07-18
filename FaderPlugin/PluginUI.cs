@@ -27,7 +27,7 @@ namespace FaderPlugin {
             set { settingsVisible = value; }
         }
 
-        private Vector2 _windowSize = new Vector2(1400, 850) * ImGui.GetIO().FontGlobalScale;
+        private Vector2 _windowSize = new Vector2(730, 670) * ImGui.GetIO().FontGlobalScale;
         private OverrideKeys CurrentOverrideKey => (OverrideKeys)configuration.OverrideKey;
         private HttpClient _httpClient = new HttpClient();
         private string _noticeString;
@@ -56,7 +56,6 @@ namespace FaderPlugin {
                 _noticeUrl = strArray[1];
 
                 if(!(_noticeUrl.StartsWith("http://") || _noticeUrl.StartsWith("https://"))) {
-                    // PluginLog.Warning($"Received invalid noticeUrl {_noticeUrl}, ignoring");
                     _noticeUrl = null;
                 }
             } catch(Exception ex) {
@@ -68,7 +67,6 @@ namespace FaderPlugin {
                 return;
             }
 
-            ImGui.Dummy(new Vector2(0.0f, 15f));
             ImGui.PushStyleColor((ImGuiCol)0, ImGuiColors.DPSRed);
             ImGuiHelpers.SafeTextWrapped(_noticeString);
 
@@ -105,8 +103,9 @@ namespace FaderPlugin {
                 DisplayNotice();
 
                 ImGui.Text("User Focus key:");
-                ImGuiHelpTooltip("When held interface will be setup as per 'UserFocus' column.");
 
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(195);
                 if(ImGui.BeginCombo("", CurrentOverrideKey.ToString())) {
                     foreach(var option in Enum.GetValues(typeof(OverrideKeys))) {
                         if(ImGui.Selectable(option.ToString(), option.Equals(CurrentOverrideKey))) {
@@ -117,6 +116,7 @@ namespace FaderPlugin {
 
                     ImGui.EndCombo();
                 }
+                ImGuiHelpTooltip("When held interface will be setup as per 'UserFocus' column.");
 
                 var focusOnHotbarsUnlock = configuration.FocusOnHotbarsUnlock;
                 if(ImGui.Checkbox("##focus_on_unlocked_bars", ref focusOnHotbarsUnlock)) {
@@ -131,8 +131,9 @@ namespace FaderPlugin {
                 var idleDelay = (float)TimeSpan.FromMilliseconds(configuration.IdleTransitionDelay).TotalSeconds;
                 ImGui.Text("Idle transition delay:");
                 ImGui.SameLine();
-                if(ImGui.SliderFloat("##idle_delay", ref idleDelay, 0.1f, 15f)) {
-                    configuration.IdleTransitionDelay = (long)TimeSpan.FromSeconds(idleDelay).TotalMilliseconds;
+                ImGui.SetNextItemWidth(170);
+                if(ImGui.SliderFloat("##idle_delay", ref idleDelay, 0.1f, 15f, "%.1f seconds")) {
+                    configuration.IdleTransitionDelay = (long)TimeSpan.FromSeconds(Math.Round(idleDelay, 1)).TotalMilliseconds;
                     configuration.Save();
                 }
 
@@ -188,7 +189,7 @@ namespace FaderPlugin {
 
                         // State
                         ImGui.SetNextItemWidth(200);
-                        if(ImGui.BeginCombo($"##{elementName}-{i}-state", elementState.ToString())) {
+                        if(ImGui.BeginCombo($"##{elementName}-{i}-state", StateUtil.GetStateName(elementState))) {
                             foreach(State state in Enum.GetValues(typeof(State))) {
                                 if(state == State.None || state == State.Default) {
                                     continue;
