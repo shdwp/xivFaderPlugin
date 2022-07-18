@@ -16,7 +16,7 @@ namespace FaderPlugin {
             Shift = 0x10,
         }
 
-        private Configuration configuration;
+        private Configuration config;
         private Element selectedElement;
         private List<ConfigEntry> selectedConfig;
 
@@ -28,13 +28,13 @@ namespace FaderPlugin {
         }
 
         private Vector2 _windowSize = new Vector2(730, 670) * ImGui.GetIO().FontGlobalScale;
-        private OverrideKeys CurrentOverrideKey => (OverrideKeys)configuration.OverrideKey;
+        private OverrideKeys CurrentOverrideKey => (OverrideKeys)config.OverrideKey;
         private HttpClient _httpClient = new HttpClient();
         private string _noticeString;
         private string _noticeUrl;
 
         public PluginUI(Configuration configuration) {
-            this.configuration = configuration;
+            this.config = configuration;
 
             DownloadAndParseNotice();
         }
@@ -109,8 +109,8 @@ namespace FaderPlugin {
                 if(ImGui.BeginCombo("", CurrentOverrideKey.ToString())) {
                     foreach(var option in Enum.GetValues(typeof(OverrideKeys))) {
                         if(ImGui.Selectable(option.ToString(), option.Equals(CurrentOverrideKey))) {
-                            configuration.OverrideKey = (int)option;
-                            configuration.Save();
+                            config.OverrideKey = (int)option;
+                            config.Save();
                         }
                     }
 
@@ -118,23 +118,31 @@ namespace FaderPlugin {
                 }
                 ImGuiHelpTooltip("When held interface will be setup as per 'UserFocus' column.");
 
-                var focusOnHotbarsUnlock = configuration.FocusOnHotbarsUnlock;
+                var focusOnHotbarsUnlock = config.FocusOnHotbarsUnlock;
                 if(ImGui.Checkbox("##focus_on_unlocked_bars", ref focusOnHotbarsUnlock)) {
-                    configuration.FocusOnHotbarsUnlock = focusOnHotbarsUnlock;
-                    configuration.Save();
+                    config.FocusOnHotbarsUnlock = focusOnHotbarsUnlock;
+                    config.Save();
                 }
 
                 ImGui.SameLine();
                 ImGui.Text("Always User Focus when hotbars are unlocked");
                 ImGuiHelpTooltip("When hotbars or crossbars are unlocked always setup to the UserFocus column.");
 
-                var idleDelay = (float)TimeSpan.FromMilliseconds(configuration.IdleTransitionDelay).TotalSeconds;
-                ImGui.Text("Idle transition delay:");
+                var idleDelay = (float)TimeSpan.FromMilliseconds(config.DefaultDelay).TotalSeconds;
+                ImGui.Text("Default delay:");
                 ImGui.SameLine();
-                ImGui.SetNextItemWidth(170);
-                if(ImGui.SliderFloat("##idle_delay", ref idleDelay, 0.1f, 15f, "%.1f seconds")) {
-                    configuration.IdleTransitionDelay = (long)TimeSpan.FromSeconds(Math.Round(idleDelay, 1)).TotalMilliseconds;
-                    configuration.Save();
+                bool defaultDelayEnabled = config.DefaultDelayEnabled();
+                if(ImGui.Checkbox("##default_delay_enabled", ref defaultDelayEnabled)) {
+                    config.DefaultDelay = config.DefaultDelayEnabled() ? 0 : 2000;
+                    config.Save();
+                }
+                if(defaultDelayEnabled) {
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(170);
+                    if(ImGui.SliderFloat("##default_delay", ref idleDelay, 0.1f, 15f, "%.1f seconds")) {
+                        config.DefaultDelay = (long)TimeSpan.FromSeconds(Math.Round(idleDelay, 1)).TotalMilliseconds;
+                        config.Save();
+                    }
                 }
 
                 ImGuiHelpTooltip("Amount of time it takes to go back to the `Idle` column.");
@@ -163,7 +171,7 @@ namespace FaderPlugin {
                     if(ImGui.Button(buttonText, new Vector2(buttonWidth, 22))) {
                         selectedElement = element;
 
-                        selectedConfig = configuration.GetElementConfig(element);
+                        selectedConfig = config.GetElementConfig(element);
                     }
 
                     if(tooltipText != null) {
@@ -196,7 +204,7 @@ namespace FaderPlugin {
                                 }
                                 if(ImGui.Selectable(StateUtil.GetStateName(state))) {
                                     selectedConfig[i].state = state;
-                                    configuration.Save();
+                                    config.Save();
                                 }
                             }
                             ImGui.EndCombo();
@@ -207,9 +215,13 @@ namespace FaderPlugin {
                         ImGui.SetNextItemWidth(200);
                         if(ImGui.BeginCombo($"##{elementName}-{i}-setting", elementSetting.ToString())) {
                             foreach(Setting setting in Enum.GetValues(typeof(Setting))) {
+                                if(setting == Setting.Unknown) {
+                                    continue;
+                                }
+
                                 if(ImGui.Selectable(setting.ToString())) {
                                     selectedConfig[i].setting = setting;
-                                    configuration.Save();
+                                    config.Save();
                                 }
                             }
                             ImGui.EndCombo();
@@ -231,7 +243,7 @@ namespace FaderPlugin {
                                     selectedConfig[i] = swap1;
                                     selectedConfig[i - 1] = swap2;
 
-                                    configuration.Save();
+                                    config.Save();
                                 }
                             }
                         }
@@ -247,7 +259,7 @@ namespace FaderPlugin {
                                     selectedConfig[i] = swap1;
                                     selectedConfig[i + 1] = swap2;
 
-                                    configuration.Save();
+                                    config.Save();
                                 }
                             }
                         }
@@ -257,7 +269,7 @@ namespace FaderPlugin {
                         if(ImGui.Button($"{FontAwesomeIcon.TrashAlt.ToIconString()}##{elementName}-{i}-delete")) {
                             selectedConfig.RemoveAt(i);
 
-                            configuration.Save();
+                            config.Save();
                         }
                         ImGui.PopFont();
                     }
@@ -272,7 +284,7 @@ namespace FaderPlugin {
                         selectedConfig[^2] = swap1;
                         selectedConfig[^1] = swap2;
 
-                        configuration.Save();
+                        config.Save();
                     }
                     ImGui.PopFont();
                 }

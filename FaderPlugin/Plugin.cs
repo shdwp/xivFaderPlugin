@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Timers;
 using Dalamud.Game;
 using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Conditions;
@@ -22,6 +23,8 @@ namespace FaderPlugin {
 
         private readonly Dictionary<State, bool> stateMap = new();
         private bool stateChanged = false;
+        private Timer idleTimer;
+        private bool hasIdled = false;
 
         private readonly string commandName = "/pfader";
         private bool enabled = true;
@@ -54,8 +57,13 @@ namespace FaderPlugin {
             });
 
             foreach(State state in Enum.GetValues(typeof(State))) {
-                stateMap[state] = state == State.Default ? true : false;
+                stateMap[state] = state == State.Default;
             }
+
+            idleTimer = new();
+            idleTimer.Elapsed += (object sender, ElapsedEventArgs e) => {
+                hasIdled = true;
+            };
         }
 
         private void LoadConfig(out Configuration config) {
@@ -76,6 +84,7 @@ namespace FaderPlugin {
             Framework.Update -= OnFrameworkUpdate;
             CommandManager.RemoveHandler(commandName);
             atkAddonsApi.UpdateAddonVisibility(_ => true);
+            idleTimer.Dispose();
         }
 
         private void FaderCommandHandler(string s, string arguments) {
@@ -129,8 +138,16 @@ namespace FaderPlugin {
             UpdateStateMap(State.Duty, Condition[ConditionFlag.BoundByDuty]);
 
             // Only update display state if a state has changed.
-            if(stateChanged) {
+            if(stateChanged || hasIdled) {
                 UpdateAddonVisibility();
+
+                if(config.DefaultDelayEnabled()) {
+                    // If idle transition is enabled reset the idle state and start the timer.
+                    hasIdled = false;
+                    idleTimer.Stop();
+                    idleTimer.Interval = config.DefaultDelay;
+                    idleTimer.Start();
+                }
             }
         }
 
@@ -158,11 +175,14 @@ namespace FaderPlugin {
 
                 List<ConfigEntry> elementConfig = config.GetElementConfig(element);
 
-                Setting setting = Setting.Show;
+                Setting setting = Setting.Unknown;
 
                 foreach(ConfigEntry entry in elementConfig) {
                     if(stateMap[entry.state]) {
-                        setting = entry.setting;
+                        // If the state is default and idle is enabled, only set the setting if the state has idled.
+                        if(entry.state != State.Default || !config.DefaultDelayEnabled() || hasIdled) {
+                            setting = entry.setting;
+                        }
                         break;
                     }
                 }

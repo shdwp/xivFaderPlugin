@@ -2,5 +2,6 @@
     public enum Setting {
         Show,
         Hide,
+        Unknown
     }
 }

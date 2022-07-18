@@ -20,7 +20,7 @@ namespace FaderPlugin.Config {
 
         public int Version { get; set; } = 5;
         public Dictionary<Element, List<ConfigEntry>> elementsConfig { get; set; }
-        public long IdleTransitionDelay { get; set; } = 2000;
+        public long DefaultDelay { get; set; } = 2000;
         public int OverrideKey { get; set; } = 0x12;
         public bool FocusOnHotbarsUnlock { get; set; } = false;
 
@@ -35,6 +35,10 @@ namespace FaderPlugin.Config {
             }
 
             Save();
+        }
+
+        public bool DefaultDelayEnabled() {
+            return this.DefaultDelay != 0;
         }
 
         public List<ConfigEntry> GetElementConfig(Element elementId) {
