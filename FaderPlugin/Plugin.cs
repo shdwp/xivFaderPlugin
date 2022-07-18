@@ -134,7 +134,7 @@ namespace FaderPlugin {
 
             // Crafting 
             UpdateStateMap(State.Crafting, Condition[ConditionFlag.Crafting]);
-            
+
             // Gathering 
             UpdateStateMap(State.Gathering, Condition[ConditionFlag.Gathering]);
 
@@ -199,7 +199,7 @@ namespace FaderPlugin {
                     Setting.Hide => false,
                     _ => null,
                 };
-            });
+            }, this.config.PreventHiddenInteraction);
         }
 
         /// <summary>

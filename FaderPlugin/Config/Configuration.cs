@@ -23,6 +23,7 @@ namespace FaderPlugin.Config {
         public long DefaultDelay { get; set; } = 2000;
         public int OverrideKey { get; set; } = 0x12;
         public bool FocusOnHotbarsUnlock { get; set; } = false;
+        public bool PreventHiddenInteraction { get; set; } = false;
 
         public void Initialize() {
             // Initialise the config.
