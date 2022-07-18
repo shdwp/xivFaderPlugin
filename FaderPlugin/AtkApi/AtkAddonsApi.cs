@@ -56,34 +56,32 @@ namespace FaderPlugin.AtkApi {
 
                 if(name != null) {
                     var value = predicate(name);
-                    if(value.HasValue) {
-                        if(value.Value) {
+                    if(value == true) {
+                        if(!moveElementOffscreen) {
                             if(addon->UldManager.NodeListCount == 0) {
                                 addon->UldManager.UpdateDrawNodeList();
                             }
-
+                        } else {
                             // Restore the elements position on screen.
-                            (short, short) position;
-                            bool positionExists = this.storedPositions.TryGetValue(name, out position);
-
-                            if(positionExists) {
+                            bool positionExists = this.storedPositions.TryGetValue(name, out var position);
+                            if(positionExists && addon->X == -9999) {
                                 var (x, y) = position;
                                 addon->SetPosition(x, y);
                             }
-                        } else {
+                        }
+                    } else if(value == false) {
+                        if(!moveElementOffscreen) {
                             if(addon->UldManager.NodeListCount != 0) {
                                 addon->UldManager.NodeListCount = 0;
                             }
-
+                        } else {
                             // Store the position prior to hiding the element.
                             if(addon->X != -9999) {
                                 this.storedPositions[name] = (addon->X, addon->Y);
                             }
 
-                            if(moveElementOffscreen) {
-                                // Move the element off screen so it can't be interacted with.
-                                addon->SetPosition(-9999, -9999);
-                            }
+                            // Move the element off screen so it can't be interacted with.
+                            addon->SetPosition(-9999, -9999);
                         }
                     }
                 }

@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
+using Dalamud.Logging;
 using FaderPlugin.Config;
 using ImGuiNET;
 
@@ -56,6 +57,7 @@ namespace FaderPlugin {
                 _noticeUrl = strArray[1];
 
                 if(!(_noticeUrl.StartsWith("http://") || _noticeUrl.StartsWith("https://"))) {
+                    PluginLog.Warning($"Received invalid noticeUrl {_noticeUrl}, ignoring");
                     _noticeUrl = null;
                 }
             } catch(Exception ex) {
