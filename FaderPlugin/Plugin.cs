@@ -5,6 +5,7 @@ using Dalamud.Game;
 using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
+using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
@@ -37,6 +38,7 @@ namespace FaderPlugin {
         [PluginService] public static CommandManager CommandManager { get; set; }
         [PluginService] public static ChatGui ChatGui { get; set; }
         [PluginService] public static GameGui GameGui { get; set; }
+        [PluginService] public static TargetManager TargetManager { get; set; }
 
         public Plugin() {
             Resolver.Initialize();
@@ -119,14 +121,16 @@ namespace FaderPlugin {
             // Combat
             UpdateStateMap(State.Combat, Condition[ConditionFlag.InCombat]);
 
+            var target = TargetManager?.Target;
+
             // Enemy Target
-            UpdateStateMap(State.EnemyTarget, ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.BattleNpc);
+            UpdateStateMap(State.EnemyTarget, target?.ObjectKind == ObjectKind.BattleNpc);
 
             // Player Target
-            UpdateStateMap(State.PlayerTarget, ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.Player);
+            UpdateStateMap(State.PlayerTarget, target?.ObjectKind == ObjectKind.Player);
 
             // NPC Target
-            UpdateStateMap(State.NPCTarget, ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.EventNpc);
+            UpdateStateMap(State.NPCTarget, target?.ObjectKind == ObjectKind.EventNpc);
 
             // Crafting 
             UpdateStateMap(State.Crafting, Condition[ConditionFlag.Crafting]);
