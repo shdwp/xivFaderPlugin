@@ -8,6 +8,7 @@
         NPCTarget,
         Crafting,
         Gathering,
+        Mounted,
         Combat,
         ChatFocus,
         UserFocus,

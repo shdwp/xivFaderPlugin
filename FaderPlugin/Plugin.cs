@@ -128,11 +128,14 @@ namespace FaderPlugin {
             // NPC Target
             UpdateStateMap(State.NPCTarget, ClientState.LocalPlayer?.TargetObject?.ObjectKind == ObjectKind.EventNpc);
 
+            // Crafting 
+            UpdateStateMap(State.Crafting, Condition[ConditionFlag.Crafting]);
+            
             // Gathering 
             UpdateStateMap(State.Gathering, Condition[ConditionFlag.Gathering]);
 
-            // Gathering 
-            UpdateStateMap(State.Crafting, Condition[ConditionFlag.Crafting]);
+            // Mounted 
+            UpdateStateMap(State.Mounted, Condition[ConditionFlag.Mounted] || Condition[ConditionFlag.Mounted2]);
 
             // Duty
             UpdateStateMap(State.Duty, Condition[ConditionFlag.BoundByDuty]);
