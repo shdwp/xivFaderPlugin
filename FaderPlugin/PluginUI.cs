@@ -17,7 +17,7 @@ namespace FaderPlugin {
             Shift = 0x10,
         }
 
-        private Configuration config;
+        private Config.Config config;
         private Element selectedElement;
         private List<ConfigEntry> selectedConfig;
 
@@ -34,7 +34,7 @@ namespace FaderPlugin {
         private string _noticeString;
         private string _noticeUrl;
 
-        public PluginUI(Configuration configuration) {
+        public PluginUI(Config.Config configuration) {
             this.config = configuration;
 
             DownloadAndParseNotice();
@@ -129,16 +129,6 @@ namespace FaderPlugin {
                 ImGui.SameLine();
                 ImGui.Text("Always User Focus when hotbars are unlocked");
                 ImGuiHelpTooltip("When hotbars or crossbars are unlocked always setup to the UserFocus column.");
-
-                var preventHiddenInteraction = config.PreventHiddenInteraction;
-                if(ImGui.Checkbox("##prevent_hidden_interaction", ref preventHiddenInteraction)) {
-                    this.config.PreventHiddenInteraction = preventHiddenInteraction;
-                    this.config.Save();
-                }
-
-                ImGui.SameLine();
-                ImGui.Text("Prevent interaction with hidden elements");
-                ImGuiHelpTooltip("Moves elements offscreen when hidden to prevent interaction. It is recommended you backup your layout before enabling this.");
 
                 var idleDelay = (float)TimeSpan.FromMilliseconds(config.DefaultDelay).TotalSeconds;
                 ImGui.Text("Default delay:");

@@ -18,9 +18,8 @@ namespace FaderPlugin {
     public class Plugin : IDalamudPlugin {
         public string Name => "Fader Plugin";
 
-        private readonly Configuration config;
+        private readonly Config.Config config;
         private readonly PluginUI ui;
-        private readonly AtkApi.AtkAddonsApi atkAddonsApi;
 
         private readonly Dictionary<State, bool> stateMap = new();
         private bool stateChanged = false;
@@ -42,8 +41,6 @@ namespace FaderPlugin {
 
         public Plugin() {
             Resolver.Initialize();
-
-            atkAddonsApi = new AtkApi.AtkAddonsApi(GameGui);
 
             LoadConfig(out config);
             config.OnSave += UpdateAddonVisibility;
@@ -68,11 +65,11 @@ namespace FaderPlugin {
             };
         }
 
-        private void LoadConfig(out Configuration config) {
+        private void LoadConfig(out Config.Config config) {
             var existingConfig = PluginInterface.GetPluginConfig();
 
             if(existingConfig?.Version == 5) {
-                config = existingConfig as Configuration;
+                config = existingConfig as Config.Config;
             } else {
                 config = new();
             }
@@ -85,7 +82,7 @@ namespace FaderPlugin {
             ui.Dispose();
             Framework.Update -= OnFrameworkUpdate;
             CommandManager.RemoveHandler(commandName);
-            atkAddonsApi.UpdateAddonVisibility(_ => true);
+            UpdateAddonVisibility(true);
             idleTimer.Dispose();
         }
 
@@ -95,11 +92,6 @@ namespace FaderPlugin {
                 enabled = !enabled;
                 var state = enabled ? "enabled" : "disabled";
                 ChatGui.Print($"Fader plugin {state}.");
-            } else if(arguments == "dbg") {
-                atkAddonsApi.UpdateAddonVisibility((name) => {
-                    ChatGui.Print(name);
-                    return null;
-                });
             } else if(arguments == "") {
                 ui.SettingsVisible = true;
             }
@@ -113,10 +105,10 @@ namespace FaderPlugin {
             stateChanged = false;
 
             // User Focus
-            UpdateStateMap(State.UserFocus, KeyState[config.OverrideKey] || (config.FocusOnHotbarsUnlock && !atkAddonsApi.AreHotbarsLocked()));
+            UpdateStateMap(State.UserFocus, KeyState[config.OverrideKey] || (config.FocusOnHotbarsUnlock && !Addon.AreHotbarsLocked()));
 
             // Chat Focus
-            UpdateStateMap(State.ChatFocus, atkAddonsApi.IsChatFocused());
+            UpdateStateMap(State.ChatFocus, Addon.IsChatFocused());
 
             // Combat
             UpdateStateMap(State.Combat, Condition[ConditionFlag.InCombat]);
@@ -145,7 +137,7 @@ namespace FaderPlugin {
             UpdateStateMap(State.Duty, Condition[ConditionFlag.BoundByDuty]);
 
             // Only update display state if a state has changed.
-            if(stateChanged || hasIdled) {
+            if(stateChanged || hasIdled || Addon.HasAddonStateChanged("HudLayout")) {
                 UpdateAddonVisibility();
 
                 if(config.DefaultDelayEnabled()) {
@@ -166,40 +158,51 @@ namespace FaderPlugin {
         }
 
         private void UpdateAddonVisibility() {
+            UpdateAddonVisibility(false);
+        }
+
+        private void UpdateAddonVisibility(bool forceShow) {
             if(!IsSafeToWork()) {
                 return;
             }
 
-            atkAddonsApi.UpdateAddonVisibility(addonName => {
-                if(!enabled) {
-                    return true;
-                }
+            forceShow = !enabled || forceShow || Addon.IsHudManagerOpen();
 
-                Element element = config.ConfigElementByName(addonName);
-                if(element == Element.Unknown) {
-                    return null;
-                }
+            foreach(Element element in Enum.GetValues(typeof(Element))) {
+                string[] addonNames = ElementUtil.GetAddonName(element);
 
-                List<ConfigEntry> elementConfig = config.GetElementConfig(element);
+                if(addonNames.Length == 0) {
+                    continue;
+                }
 
                 Setting setting = Setting.Unknown;
 
-                foreach(ConfigEntry entry in elementConfig) {
-                    if(stateMap[entry.state]) {
-                        // If the state is default and idle is enabled, only set the setting if the state has idled.
-                        if(entry.state != State.Default || !config.DefaultDelayEnabled() || hasIdled) {
-                            setting = entry.setting;
+                if(forceShow) {
+                    setting = Setting.Show;
+                }
+
+                if(setting == Setting.Unknown) {
+                    List<ConfigEntry> elementConfig = config.GetElementConfig(element);
+
+                    foreach(ConfigEntry entry in elementConfig) {
+                        if(stateMap[entry.state]) {
+                            // If the state is default and idle is enabled, only set the setting if the state has idled.
+                            if(entry.state != State.Default || !config.DefaultDelayEnabled() || hasIdled) {
+                                setting = entry.setting;
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
 
-                return setting switch {
-                    Setting.Show => true,
-                    Setting.Hide => false,
-                    _ => null,
-                };
-            }, this.config.PreventHiddenInteraction);
+                if(setting == Setting.Unknown) {
+                    continue;
+                }
+
+                foreach(string addonName in addonNames) {
+                    Addon.SetAddonVisibility(addonName, setting == Setting.Show);
+                }
+            }
         }
 
         /// <summary>
