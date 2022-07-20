@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Numerics;
@@ -8,98 +9,77 @@ using Dalamud.Logging;
 using FaderPlugin.Config;
 using ImGuiNET;
 
-namespace FaderPlugin
-{
-    public class PluginUI : IDisposable
-    {
-        private enum OverrideKeys
-        {
+namespace FaderPlugin {
+    public class PluginUI : IDisposable {
+        private enum OverrideKeys {
             Alt = 0x12,
             Ctrl = 0x11,
             Shift = 0x10,
         }
 
-        private Configuration configuration;
+        private Config.Config config;
+        private Element selectedElement;
+        private List<ConfigEntry> selectedConfig;
 
         private bool settingsVisible = false;
 
-        public bool SettingsVisible
-        {
-            get { return this.settingsVisible; }
-            set { this.settingsVisible = value; }
+        public bool SettingsVisible {
+            get { return settingsVisible; }
+            set { settingsVisible = value; }
         }
 
-        private Vector2 _windowSize = new Vector2(1400, 850) * ImGui.GetIO().FontGlobalScale;
-        private ConfigElementId _hoveredElementId;
-        private FaderState _hoveredState;
-        private OverrideKeys CurrentOverrideKey => (OverrideKeys)configuration.OverrideKey;
+        private Vector2 _windowSize = new Vector2(730, 670) * ImGui.GetIO().FontGlobalScale;
+        private OverrideKeys CurrentOverrideKey => (OverrideKeys)config.OverrideKey;
         private HttpClient _httpClient = new HttpClient();
         private string _noticeString;
         private string _noticeUrl;
 
-        public PluginUI(Configuration configuration)
-        {
-            this.configuration = configuration;
+        public PluginUI(Config.Config configuration) {
+            this.config = configuration;
 
             DownloadAndParseNotice();
         }
 
-        private void DownloadAndParseNotice()
-        {
-            try
-            {
+        private void DownloadAndParseNotice() {
+            try {
                 var stringAsync = _httpClient.GetStringAsync("https://shdwp.github.io/ukraine/xiv_notice.txt");
                 stringAsync.Wait();
                 var strArray = stringAsync.Result.Split('|');
 
-                if ((uint)strArray.Length > 0U)
-                {
+                if((uint)strArray.Length > 0U) {
                     _noticeString = strArray[0];
                 }
 
-                if (strArray.Length <= 1)
-                {
+                if(strArray.Length <= 1) {
                     return;
                 }
 
                 _noticeUrl = strArray[1];
 
-                if (!(_noticeUrl.StartsWith("http://") || _noticeUrl.StartsWith("https://")))
-                {
+                if(!(_noticeUrl.StartsWith("http://") || _noticeUrl.StartsWith("https://"))) {
                     PluginLog.Warning($"Received invalid noticeUrl {_noticeUrl}, ignoring");
                     _noticeUrl = null;
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch(Exception ex) {
             }
         }
 
-        private void DisplayNotice()
-        {
-            if (_noticeString == null)
-            {
+        private void DisplayNotice() {
+            if(_noticeString == null) {
                 return;
             }
 
-            ImGui.Dummy(new Vector2(0.0f, 15f));
             ImGui.PushStyleColor((ImGuiCol)0, ImGuiColors.DPSRed);
             ImGuiHelpers.SafeTextWrapped(_noticeString);
 
-            if (_noticeUrl != null)
-            {
-                if (ImGui.Button(_noticeUrl))
-                {
-                    try
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
+            if(_noticeUrl != null) {
+                if(ImGui.Button(_noticeUrl)) {
+                    try {
+                        Process.Start(new ProcessStartInfo {
                             FileName = _noticeUrl,
                             UseShellExecute = true
                         });
-                    }
-                    catch (Exception ex)
-                    {
+                    } catch(Exception ex) {
                     }
                 }
             }
@@ -107,247 +87,245 @@ namespace FaderPlugin
             ImGui.PopStyleColor();
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
         }
 
-        public void Draw()
-        {
-            if (!SettingsVisible)
-            {
+        public void Draw() {
+            if(!SettingsVisible) {
                 return;
             }
 
             DrawSettingsWindow();
         }
 
-        public void DrawSettingsWindow()
-        {
+        public void DrawSettingsWindow() {
             ImGui.SetNextWindowSize(_windowSize, ImGuiCond.Always);
 
-            if (ImGui.Begin("Fader Plugin Configuration", ref this.settingsVisible))
-            {
+            if(ImGui.Begin("Fader Plugin Configuration", ref settingsVisible)) {
                 DisplayNotice();
 
                 ImGui.Text("User Focus key:");
-                ImGuiHelpTooltip("When held interface will be setup as per 'UserFocus' column.");
 
-                if (ImGui.BeginCombo("", CurrentOverrideKey.ToString()))
-                {
-                    foreach (var option in Enum.GetValues(typeof(OverrideKeys)))
-                    {
-                        if (ImGui.Selectable(option.ToString(), option.Equals(CurrentOverrideKey)))
-                        {
-                            configuration.OverrideKey = (int)option;
-                            configuration.Save();
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(195);
+                if(ImGui.BeginCombo("", CurrentOverrideKey.ToString())) {
+                    foreach(var option in Enum.GetValues(typeof(OverrideKeys))) {
+                        if(ImGui.Selectable(option.ToString(), option.Equals(CurrentOverrideKey))) {
+                            config.OverrideKey = (int)option;
+                            config.Save();
                         }
                     }
 
                     ImGui.EndCombo();
                 }
+                ImGuiHelpTooltip("When held interface will be setup as per 'UserFocus' column.");
 
-                var focusOnHotbarsUnlock = configuration.FocusOnHotbarsUnlock;
-                if (ImGui.Checkbox("##focus_on_unlocked_bars", ref focusOnHotbarsUnlock))
-                {
-                    this.configuration.FocusOnHotbarsUnlock = focusOnHotbarsUnlock;
-                    this.configuration.Save();
+                var focusOnHotbarsUnlock = config.FocusOnHotbarsUnlock;
+                if(ImGui.Checkbox("##focus_on_unlocked_bars", ref focusOnHotbarsUnlock)) {
+                    config.FocusOnHotbarsUnlock = focusOnHotbarsUnlock;
+                    config.Save();
                 }
 
                 ImGui.SameLine();
                 ImGui.Text("Always User Focus when hotbars are unlocked");
                 ImGuiHelpTooltip("When hotbars or crossbars are unlocked always setup to the UserFocus column.");
 
-                var preventHiddenInteraction = configuration.PreventHiddenInteraction;
-                if(ImGui.Checkbox("##prevent_hidden_interaction", ref preventHiddenInteraction)) {
-                    this.configuration.PreventHiddenInteraction = preventHiddenInteraction;
-                    this.configuration.Save();
+                var idleDelay = (float)TimeSpan.FromMilliseconds(config.DefaultDelay).TotalSeconds;
+                ImGui.Text("Default delay:");
+                ImGui.SameLine();
+                bool defaultDelayEnabled = config.DefaultDelayEnabled();
+                if(ImGui.Checkbox("##default_delay_enabled", ref defaultDelayEnabled)) {
+                    config.DefaultDelay = config.DefaultDelayEnabled() ? 0 : 2000;
+                    config.Save();
                 }
-
-                ImGui.SameLine();
-                ImGui.Text("Prevent interaction with hidden elements");
-                ImGuiHelpTooltip("Moves elements offscreen when hidden to prevent interaction. It is recommended you backup your layout before enabling this.");
-
-                var idleDelay = (float)TimeSpan.FromMilliseconds(configuration.IdleTransitionDelay).TotalSeconds;
-                ImGui.Text("Idle transition delay:");
-                ImGui.SameLine();
-                if (ImGui.SliderFloat("##idle_delay", ref idleDelay, 0.1f, 15f))
-                {
-                    this.configuration.IdleTransitionDelay = (long)TimeSpan.FromSeconds(idleDelay).TotalMilliseconds;
-                    this.configuration.Save();
+                if(defaultDelayEnabled) {
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(170);
+                    if(ImGui.SliderFloat("##default_delay", ref idleDelay, 0.1f, 15f, "%.1f seconds")) {
+                        config.DefaultDelay = (long)TimeSpan.FromSeconds(Math.Round(idleDelay, 1)).TotalMilliseconds;
+                        config.Save();
+                    }
                 }
 
                 ImGuiHelpTooltip("Amount of time it takes to go back to the `Idle` column.");
 
-                ImGui.Text("Elements matrix:");
-                ImGuiHelpTooltip("Decides what to do with each interface element when under certain conditions." +
-                                 "\nThis settings wouldn't interfere with whatever is configured in HUD settings simply overriding them." +
-                                 "\nIf behaviour of an element already satisfy you, or if you hide the element it via HUD setting you can leave it at Skip.");
-
                 ImGui.Separator();
 
-                ImGui.BeginChild("##settingsMatrix");
-                var columnIndex = 0;
-                ImGui.Columns(Enum.GetValues(typeof(FaderState)).Length);
+                ImGui.Columns(2, "columns", false);
 
-                var buttonSize = ImGui.CalcTextSize("Combat");
-                var columnWidth = ImGui.CalcTextSize("HasEnemyTarget ?");
+                var buttonWidth = ImGui.CalcTextSize("Status Enfeeblements   ?").X + 10;
 
-                ImGui.Text("");
-                foreach (var element in Enum.GetValues(typeof(ConfigElementId)))
-                {
-                    if (ShouldIgnoreElement((ConfigElementId)element))
-                    {
+                ImGui.SetColumnWidth(0, buttonWidth + 40);
+
+                ImGui.BeginChild("##elementsList");
+                foreach(Element element in Enum.GetValues(typeof(Element))) {
+                    if(ShouldIgnoreElement(element)) {
                         continue;
                     }
 
-                    ImGui.TextColored(_hoveredElementId == (ConfigElementId)element ? ImGuiColors.DalamudRed : ImGuiColors.DalamudWhite, element.ToString());
-                    var tooltipText = TooltipForElement((ConfigElementId)element);
-                    if (tooltipText != null)
-                    {
-                        ImGuiHelpTooltip(tooltipText);
+                    var buttonText = ElementUtil.GetElementName(element);
+                    string tooltipText = TooltipForElement(element);
+                    if(tooltipText != null) {
+                        buttonText += "   ?";
                     }
+
+                    ImGui.PushStyleVar(ImGuiStyleVar.ButtonTextAlign, new Vector2(0, 0.5f));
+                    if(ImGui.Button(buttonText, new Vector2(buttonWidth, 22))) {
+                        selectedElement = element;
+
+                        selectedConfig = config.GetElementConfig(element);
+                    }
+
+                    if(tooltipText != null) {
+                        if(ImGui.IsItemHovered()) {
+                            ImGui.SetTooltip(tooltipText);
+                        }
+                    }
+
                 }
+                ImGui.EndChild();
 
-                foreach (var state in Enum.GetValues(typeof(FaderState)))
-                {
-                    if (state.Equals(FaderState.None))
-                    {
-                        continue;
-                    }
+                ImGui.NextColumn();
 
-                    columnIndex++;
-                    ImGui.NextColumn();
-                    ImGui.SetColumnWidth(columnIndex, columnWidth.X + 20f);
+                // Config for the selected elements.
+                if(selectedElement != Element.Unknown) {
+                    string elementName = ElementUtil.GetElementName(selectedElement);
+                    ImGui.Text($"{elementName} Configuration");
 
-                    ImGui.TextColored(_hoveredState == (FaderState)state ? ImGuiColors.DalamudRed : ImGuiColors.DalamudWhite, state.ToString());
-                    ImGuiHelpTooltip(TooltipForState((FaderState)state));
+                    // Config for each condition.
+                    for(int i = 0; i < selectedConfig.Count; i++) {
+                        var elementState = selectedConfig[i].state;
+                        var elementSetting = selectedConfig[i].setting;
 
-                    foreach (var element in Enum.GetValues(typeof(ConfigElementId)))
-                    {
-                        var elementId = (ConfigElementId)element;
-                        if (ShouldIgnoreElement(elementId))
-                        {
+                        // State
+                        ImGui.SetNextItemWidth(200);
+                        if(ImGui.BeginCombo($"##{elementName}-{i}-state", StateUtil.GetStateName(elementState))) {
+                            foreach(State state in Enum.GetValues(typeof(State))) {
+                                if(state == State.None || state == State.Default) {
+                                    continue;
+                                }
+                                if(ImGui.Selectable(StateUtil.GetStateName(state))) {
+                                    selectedConfig[i].state = state;
+                                    config.Save();
+                                }
+                            }
+                            ImGui.EndCombo();
+                        }
+
+                        // Setting
+                        ImGui.SameLine();
+                        ImGui.SetNextItemWidth(200);
+                        if(ImGui.BeginCombo($"##{elementName}-{i}-setting", elementSetting.ToString())) {
+                            foreach(Setting setting in Enum.GetValues(typeof(Setting))) {
+                                if(setting == Setting.Unknown) {
+                                    continue;
+                                }
+
+                                if(ImGui.Selectable(setting.ToString())) {
+                                    selectedConfig[i].setting = setting;
+                                    config.Save();
+                                }
+                            }
+                            ImGui.EndCombo();
+                        }
+
+                        if(elementState == State.Default) {
                             continue;
                         }
 
-                        var stateId = (FaderState)state;
-                        var setting = configuration.GetSetting(elementId, stateId);
-                        var buttonId = $"##{stateId}{elementId}";
+                        // Up
+                        ImGui.SameLine();
+                        ImGui.PushFont(UiBuilder.IconFont);
+                        if(ImGui.Button($"{FontAwesomeIcon.ArrowUp.ToIconString()}##{elementName}-{i}-up")) {
+                            if(i > 0) {
+                                var swap1 = selectedConfig[i - 1];
+                                var swap2 = selectedConfig[i];
 
-                        switch (setting)
-                        {
-                            case ConfigElementSetting.Skip:
-                            {
-                                ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudGrey);
-                                if (ImGui.Button("skip" + buttonId, buttonSize))
-                                {
-                                    UpdateSetting(elementId, stateId, ConfigElementSetting.Hide);
+                                if(swap1.state != State.Default && swap2.state != State.Default) {
+                                    selectedConfig[i] = swap1;
+                                    selectedConfig[i - 1] = swap2;
+
+                                    config.Save();
                                 }
-
-                                ImGui.PopStyleColor();
-                                break;
-                            }
-
-                            case ConfigElementSetting.Hide:
-                            {
-                                ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
-                                if (ImGui.Button("hide" + buttonId, buttonSize))
-                                {
-                                    UpdateSetting(elementId, stateId, ConfigElementSetting.Show);
-                                }
-
-                                ImGui.PopStyleColor();
-                                break;
-                            }
-
-                            case ConfigElementSetting.Show:
-                            {
-                                ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.HealerGreen);
-                                if (ImGui.Button("show" + buttonId, buttonSize))
-                                {
-                                    UpdateSetting(elementId, stateId, ConfigElementSetting.Skip);
-                                }
-
-                                ImGui.PopStyleColor();
-                                break;
                             }
                         }
 
-                        if (ImGui.IsItemHovered())
-                        {
-                            _hoveredState = stateId;
-                            _hoveredElementId = elementId;
+                        // Down
+                        ImGui.SameLine();
+                        if(ImGui.Button($"{FontAwesomeIcon.ArrowDown.ToIconString()}##{elementName}-{i}-down")) {
+                            if(i < selectedConfig.Count - 1) {
+                                var swap1 = selectedConfig[i + 1];
+                                var swap2 = selectedConfig[i];
+
+                                if(swap1.state != State.Default && swap2.state != State.Default) {
+                                    selectedConfig[i] = swap1;
+                                    selectedConfig[i + 1] = swap2;
+
+                                    config.Save();
+                                }
+                            }
                         }
+
+                        // Delete
+                        ImGui.SameLine();
+                        if(ImGui.Button($"{FontAwesomeIcon.TrashAlt.ToIconString()}##{elementName}-{i}-delete")) {
+                            selectedConfig.RemoveAt(i);
+
+                            config.Save();
+                        }
+                        ImGui.PopFont();
                     }
+
+                    ImGui.PushFont(UiBuilder.IconFont);
+                    if(ImGui.Button($"{FontAwesomeIcon.Plus.ToIconString()}##{elementName}-add")) {
+                        // Add the new state then swap it with the existing default state.
+                        selectedConfig.Add(new(State.None, Setting.Hide));
+                        var swap1 = selectedConfig[^1];
+                        var swap2 = selectedConfig[^2];
+
+                        selectedConfig[^2] = swap1;
+                        selectedConfig[^1] = swap2;
+
+                        config.Save();
+                    }
+                    ImGui.PopFont();
                 }
 
-                ImGui.EndChild();
             }
 
             _windowSize = ImGui.GetWindowSize();
             ImGui.End();
         }
 
-        private void ImGuiHelpTooltip(string tooltip)
-        {
+        private void ImGuiHelpTooltip(string tooltip) {
             ImGui.SameLine();
             ImGui.TextColored(new Vector4(0.8f, 0.8f, 0.8f, 1f), "?");
-            if (ImGui.IsItemHovered())
-            {
+            if(ImGui.IsItemHovered()) {
                 ImGui.SetTooltip(tooltip);
             }
         }
 
-        private string TooltipForState(FaderState state)
-        {
-            return state switch
-            {
-                FaderState.Combat => "In combat",
-                FaderState.Mounted => "When mounted",
-                FaderState.Crafting => "Crafting an item",
-                FaderState.Duty => "In instanced duty",
-                FaderState.Gathering => "Gathering a node",
-                FaderState.ChatFocus => "When typing a message in chat",
-                FaderState.UserFocus => "Focus button pressed",
-                FaderState.HasEnemyTarget => "Targeting an enemy",
-                FaderState.HasPlayerTarget => "Targeting a player",
-                FaderState.HasNPCTarget => "Targeting a NPC",
-                FaderState.Idle => "When other conditions are not active",
-                _ => "No tooltip",
-            };
-        }
-
-        private string TooltipForElement(ConfigElementId elementId)
-        {
-            return elementId switch
-            {
-                ConfigElementId.Chat =>
+        private string TooltipForElement(Element elementId) {
+            return elementId switch {
+                Element.Chat =>
                     "Should be always visible if focused, albeit feature can be buggy with some configurations",
-                ConfigElementId.PetBar => "Pet and mount actions",
-                ConfigElementId.Job => "Job-specific UI",
-                ConfigElementId.Status => "Player status (when not split into 3 separate elements)",
-                ConfigElementId.StatusEnfeeblements => "Player enfeeblements (when split into 3 separate elements)",
-                ConfigElementId.StatusEnhancements => "Player enhancements (when split into 3 separate elements)",
-                ConfigElementId.StatusOther => "Player other status (when split into 3 separate elements)",
+                Element.PetHotbar => "Pet and mount actions",
+                Element.Job => "Job-specific UI",
+                Element.Status => "Player status (when not split into 3 separate elements)",
+                Element.StatusEnfeeblements => "Player enfeeblements (when split into 3 separate elements)",
+                Element.StatusEnhancements => "Player enhancements (when split into 3 separate elements)",
+                Element.StatusOther => "Player other status (when split into 3 separate elements)",
                 _ => null,
             };
         }
 
-        private bool ShouldIgnoreElement(ConfigElementId elementId)
-        {
-            return elementId switch
-            {
-                ConfigElementId.QuestLog => true,
-                ConfigElementId.Nameplates => true,
-                ConfigElementId.Unknown => true,
+        private bool ShouldIgnoreElement(Element elementId) {
+            return elementId switch {
+                Element.QuestLog => true,
+                Element.Nameplates => true,
+                Element.Unknown => true,
                 _ => false,
             };
-        }
-
-        private void UpdateSetting(ConfigElementId id, FaderState state, ConfigElementSetting setting)
-        {
-            configuration.SetSetting(id, state, setting);
-            configuration.Save();
         }
     }
 }
