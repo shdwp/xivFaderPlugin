@@ -68,7 +68,7 @@ namespace FaderPlugin {
         private void LoadConfig(out Config.Config config) {
             var existingConfig = PluginInterface.GetPluginConfig();
 
-            if(existingConfig?.Version == 5) {
+            if(existingConfig?.Version == 6) {
                 config = existingConfig as Config.Config;
             } else {
                 config = new();
