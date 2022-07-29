@@ -4,12 +4,12 @@
   "Punchline": "Automatically hides UI elements.",
   "Description": "Lets you automatically hide certain game UI elements based on number of conditions.",
   "InternalName": "faderPlugin",
-  "AssemblyVersion": "2.0.0",
   "RepoUrl": "https://github.com/shdwp/xivFaderPlugin",
   "ApplicableVersion": "any",
   "Tags": [
     "UI"
   ],
   "DalamudApiLevel": 6,
-  "IconUrl": "https://github.com/goatcorp/DalamudPlugins/raw/api6/plugins/faderPlugin/images/icon.png"
+  "IconUrl": "https://github.com/goatcorp/DalamudPlugins/raw/api6/plugins/faderPlugin/images/icon.png",
+  "Changelog": "Release v2.0.0.0\n- New config interface\n- More flexible fading rules\n- Various bug fixes"
 }
