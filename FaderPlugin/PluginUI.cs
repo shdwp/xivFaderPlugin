@@ -199,21 +199,28 @@ namespace FaderPlugin {
 
                         // State
                         ImGui.SetNextItemWidth(200);
-                        if(ImGui.BeginCombo($"##{elementName}-{i}-state", StateUtil.GetStateName(elementState))) {
-                            foreach(State state in Enum.GetValues(typeof(State))) {
-                                if(state == State.None || state == State.Default) {
-                                    continue;
+                        if(elementState == State.Default) {
+                            ImGui.Text(StateUtil.GetStateName(elementState));
+                            ImGui.SameLine();
+                            // Because item width doesn't work on text. Remove when reimplemented with tables.
+                            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 159);
+                        } else {
+                            if(ImGui.BeginCombo($"##{elementName}-{i}-state", StateUtil.GetStateName(elementState))) {
+                                foreach(State state in Enum.GetValues(typeof(State))) {
+                                    if(state == State.None || state == State.Default) {
+                                        continue;
+                                    }
+                                    if(ImGui.Selectable(StateUtil.GetStateName(state))) {
+                                        selectedConfig[i].state = state;
+                                        config.Save();
+                                    }
                                 }
-                                if(ImGui.Selectable(StateUtil.GetStateName(state))) {
-                                    selectedConfig[i].state = state;
-                                    config.Save();
-                                }
+                                ImGui.EndCombo();
                             }
-                            ImGui.EndCombo();
+                            ImGui.SameLine();
                         }
 
                         // Setting
-                        ImGui.SameLine();
                         ImGui.SetNextItemWidth(200);
                         if(ImGui.BeginCombo($"##{elementName}-{i}-setting", elementSetting.ToString())) {
                             foreach(Setting setting in Enum.GetValues(typeof(Setting))) {

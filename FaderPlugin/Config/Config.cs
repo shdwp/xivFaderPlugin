@@ -18,7 +18,7 @@ namespace FaderPlugin.Config {
     public class Config : IPluginConfiguration {
         public event Action? OnSave;
 
-        public int Version { get; set; } = 5;
+        public int Version { get; set; } = 6;
         public Dictionary<Element, List<ConfigEntry>> elementsConfig { get; set; }
         public long DefaultDelay { get; set; } = 2000;
         public int OverrideKey { get; set; } = 0x12;

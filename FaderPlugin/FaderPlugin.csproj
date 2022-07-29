@@ -1,45 +1,39 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Description>Fader Plugin</Description>
+		<Version>2.0.0.0</Version>
+		<LangVersion>10</LangVersion>
+	</PropertyGroup>
 
- <PropertyGroup>
-  <TargetFramework>net5.0</TargetFramework>
-  <Nullable>enable</Nullable>
-  <RootNamespace>FaderPlugin</RootNamespace>
-  <AssemblyVersion>1.1.0</AssemblyVersion>
-  <FileVersion>1.1.0</FileVersion>
-  <LangVersion>10</LangVersion>
- </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net5.0-windows</TargetFramework>
+		<Platforms>x64</Platforms>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<OutputPath>$(AppData)\XIVLauncher\devPlugins\faderPlugin\</OutputPath>
+		<DalamudLibPath>$(AppData)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+	</PropertyGroup>
 
- <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-   <OutputPath></OutputPath>
-   <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
- </PropertyGroup>
-
- <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-   <OutputPath></OutputPath>
-   <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
- </PropertyGroup>
-
- <ItemGroup>
-   <Content Include="..\Data\FaderPlugin.json">
-     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-     <Link>Data\FaderPlugin.json</Link>
-   </Content>
- </ItemGroup>
-
- <ItemGroup>
-   <Reference Include="Dalamud">
-     <HintPath>C:\Users\shdwp\AppData\Roaming\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
-   </Reference>
-   <Reference Include="FFXIVClientStructs">
-     <HintPath>C:\Users\shdwp\AppData\Roaming\XIVLauncher\addon\Hooks\dev\FFXIVClientStructs.dll</HintPath>
-   </Reference>
-   <Reference Include="ImGui.NET">
-     <HintPath>C:\Users\shdwp\AppData\Roaming\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
-   </Reference>
- </ItemGroup>
-
- <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-   <Exec Command="copy $(TargetDir)\FaderPlugin.dll %APPDATA%\XivLauncher\devPlugins\faderPlugin\&#xA;copy $(TargetDir)\Data\FaderPlugin.json %APPDATA%\XivLauncher\devPlugins\faderPlugin\" />
- </Target>
-
+	<ItemGroup>
+		<PackageReference Include="DalamudPackager" Version="2.1.6" />
+		<Reference Include="FFXIVClientStructs">
+			<HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Dalamud">
+			<HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="ImGui.NET">
+			<HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
 </Project>
