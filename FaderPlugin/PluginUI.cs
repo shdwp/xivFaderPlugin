@@ -298,10 +298,9 @@ namespace FaderPlugin {
                     ImGui.PopFont();
                 }
 
+                _windowSize = ImGui.GetWindowSize();
+                ImGui.End();
             }
-
-            _windowSize = ImGui.GetWindowSize();
-            ImGui.End();
         }
 
         private void ImGuiHelpTooltip(string tooltip) {
