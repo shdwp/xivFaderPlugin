@@ -149,6 +149,15 @@ namespace FaderPlugin {
 
                 ImGuiHelpTooltip("Amount of time it takes to go back to the `Idle` column.");
 
+                ImGui.Text("Chat activity timeout:");
+                ImGui.SameLine();
+                var chatActivityTimeout = (int)TimeSpan.FromMilliseconds(config.ChatActivityTimeout).TotalSeconds;
+                ImGui.SetNextItemWidth(170);
+                if(ImGui.SliderInt("##chat_activity_timeout", ref chatActivityTimeout, 1, 20, "%d seconds")) {
+                    config.ChatActivityTimeout = (long)TimeSpan.FromSeconds(chatActivityTimeout).TotalMilliseconds;
+                    config.Save();
+                }
+
                 ImGui.Separator();
 
                 ImGui.Columns(2, "columns", false);
@@ -206,7 +215,7 @@ namespace FaderPlugin {
                             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 159);
                         } else {
                             if(ImGui.BeginCombo($"##{elementName}-{i}-state", StateUtil.GetStateName(elementState))) {
-                                foreach(State state in Enum.GetValues(typeof(State))) {
+                                foreach(State state in StateUtil.orderedStates) {
                                     if(state == State.None || state == State.Default) {
                                         continue;
                                     }

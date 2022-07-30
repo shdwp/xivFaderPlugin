@@ -9,6 +9,8 @@ using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
+using Dalamud.Game.Text;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using FaderPlugin.Config;
@@ -23,8 +25,15 @@ namespace FaderPlugin {
 
         private readonly Dictionary<State, bool> stateMap = new();
         private bool stateChanged = false;
+
+        // Idle State
         private Timer idleTimer;
         private bool hasIdled = false;
+
+        // Chat State
+        private Timer chatActivityTimer;
+        private bool hasChatActivity;
+        private List<XivChatType> activeChatTypes = new() { XivChatType.Say, XivChatType.Party, XivChatType.Alliance, XivChatType.Yell, XivChatType.Shout, XivChatType.FreeCompany, XivChatType.TellIncoming, XivChatType.CrossLinkShell1, XivChatType.CrossLinkShell2, XivChatType.CrossLinkShell3, XivChatType.CrossLinkShell4, XivChatType.CrossLinkShell5, XivChatType.CrossLinkShell6, XivChatType.CrossLinkShell7, XivChatType.CrossLinkShell8 };
 
         private readonly string commandName = "/pfader";
         private bool enabled = true;
@@ -63,6 +72,13 @@ namespace FaderPlugin {
             idleTimer.Elapsed += (object sender, ElapsedEventArgs e) => {
                 hasIdled = true;
             };
+
+            chatActivityTimer = new();
+            chatActivityTimer.Elapsed += (object sender, ElapsedEventArgs e) => {
+                hasChatActivity = false;
+            };
+
+            ChatGui.ChatMessage += OnChatMessage;
         }
 
         private void LoadConfig(out Config.Config config) {
@@ -82,8 +98,10 @@ namespace FaderPlugin {
             ui.Dispose();
             Framework.Update -= OnFrameworkUpdate;
             CommandManager.RemoveHandler(commandName);
+            ChatGui.ChatMessage -= OnChatMessage;
             UpdateAddonVisibility(true);
             idleTimer.Dispose();
+            chatActivityTimer.Dispose();
         }
 
         private void FaderCommandHandler(string s, string arguments) {
@@ -95,6 +113,17 @@ namespace FaderPlugin {
             } else if(arguments == "") {
                 ui.SettingsVisible = true;
             }
+        }
+        private void OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
+            if(!activeChatTypes.Contains(type)) {
+                // Don't trigger chat for non-standard chat channels.
+                return;
+            }
+
+            hasChatActivity = true;
+            chatActivityTimer.Stop();
+            chatActivityTimer.Interval = config.ChatActivityTimeout;
+            chatActivityTimer.Start();
         }
 
         private void OnFrameworkUpdate(Framework framework) {
@@ -109,6 +138,9 @@ namespace FaderPlugin {
 
             // Chat Focus
             UpdateStateMap(State.ChatFocus, Addon.IsChatFocused());
+
+            // Chat Activity
+            UpdateStateMap(State.ChatActivity, hasChatActivity);
 
             // Combat
             UpdateStateMap(State.Combat, Condition[ConditionFlag.InCombat]);
