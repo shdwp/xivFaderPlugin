@@ -121,7 +121,7 @@
                     "JobHudRRP0", "JobHudRRP1",
                     "JobHudBRD0",
                     "JobHudMCH0",
-                    "JobHudDNC0",
+                    "JobHudDNC0", "JobHudDNC1",
                     "JobHudBLM0",
                     "JobHudSMN0",
                     "JobHudSMN0",
