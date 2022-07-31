@@ -123,8 +123,7 @@
                     "JobHudMCH0",
                     "JobHudDNC0", "JobHudDNC1",
                     "JobHudBLM0",
-                    "JobHudSMN0",
-                    "JobHudSMN0",
+                    "JobHudSMN0", "JobHudSMN1",
                     "JobHudRDM0"
                 },
                 Element.PartyList => new string[] { "_PartyList" },
