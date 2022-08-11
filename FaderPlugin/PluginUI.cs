@@ -179,7 +179,7 @@ namespace FaderPlugin {
                     }
 
                     ImGui.PushStyleVar(ImGuiStyleVar.ButtonTextAlign, new Vector2(0, 0.5f));
-                    if(ImGui.Button(buttonText, new Vector2(buttonWidth, 22))) {
+                    if(ImGui.Button(buttonText, new Vector2(buttonWidth, 0))) {
                         selectedElement = element;
 
                         selectedConfig = config.GetElementConfig(element);
