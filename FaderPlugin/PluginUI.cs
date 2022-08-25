@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Numerics;
 using Dalamud.Interface;
@@ -17,9 +18,9 @@ namespace FaderPlugin {
             Shift = 0x10,
         }
 
-        private Config.Config config;
-        private Element selectedElement;
+        private readonly Config.Config config;
         private List<ConfigEntry> selectedConfig;
+        private readonly List<Element> selectedElements;
 
         private bool settingsVisible = false;
 
@@ -36,6 +37,7 @@ namespace FaderPlugin {
 
         public PluginUI(Config.Config configuration) {
             this.config = configuration;
+            this.selectedElements = new();
 
             DownloadAndParseNotice();
         }
@@ -158,6 +160,8 @@ namespace FaderPlugin {
                     config.Save();
                 }
 
+                ImGui.Text("Hint: you can select multiple elements to be edited at the same time. Configuration of the element that was selected first will override the rest.");
+
                 ImGui.Separator();
 
                 ImGui.Columns(2, "columns", false);
@@ -179,10 +183,31 @@ namespace FaderPlugin {
                     }
 
                     ImGui.PushStyleVar(ImGuiStyleVar.ButtonTextAlign, new Vector2(0, 0.5f));
-                    if(ImGui.Button(buttonText, new Vector2(buttonWidth, 0))) {
-                        selectedElement = element;
 
-                        selectedConfig = config.GetElementConfig(element);
+                    Vector4? desiredButtonColor = null;
+
+                    if(selectedElements.Contains(element)) {
+                        desiredButtonColor = ImGuiColors.HealerGreen;
+                    }
+
+                    if(desiredButtonColor.HasValue) {
+                        ImGui.PushStyleColor(ImGuiCol.Button, desiredButtonColor.Value);
+                    }
+
+                    if(ImGui.Button(buttonText, new Vector2(buttonWidth, 0))) {
+                        if(!ImGui.IsKeyDown(ImGuiKey.ModCtrl)) {
+                            selectedElements.Clear();
+                        }
+
+                        if(!selectedElements.Any()) {
+                            selectedConfig = config.GetElementConfig(element);
+                        }
+
+                        if(!selectedElements.Contains(element)) {
+                            selectedElements.Add(element);
+                        } else {
+                            selectedElements.Remove(element);
+                        }
                     }
 
                     if(tooltipText != null) {
@@ -191,15 +216,31 @@ namespace FaderPlugin {
                         }
                     }
 
+                    ImGui.PopStyleVar();
+
+                    if(desiredButtonColor.HasValue) {
+                        ImGui.PopStyleColor();
+                    }
                 }
                 ImGui.EndChild();
 
                 ImGui.NextColumn();
 
                 // Config for the selected elements.
-                if(selectedElement != Element.Unknown) {
-                    string elementName = ElementUtil.GetElementName(selectedElement);
+                if(selectedElements.Any()) {
+                    string elementName = ElementUtil.GetElementName(selectedElements.First());
+                    if(selectedElements.Count > 1) {
+                        elementName += " & others";
+                    }
+
                     ImGui.Text($"{elementName} Configuration");
+
+
+                    if(selectedElements.Count > 1) {
+                        if(ImGui.Button($"Sync selected to {selectedElements.First()}")) {
+                            SaveSelectedElementsConfig();
+                        }
+                    }
 
                     // Config for each condition.
                     for(int i = 0; i < selectedConfig.Count; i++) {
@@ -221,7 +262,7 @@ namespace FaderPlugin {
                                     }
                                     if(ImGui.Selectable(StateUtil.GetStateName(state))) {
                                         selectedConfig[i].state = state;
-                                        config.Save();
+                                        SaveSelectedElementsConfig();
                                     }
                                 }
                                 ImGui.EndCombo();
@@ -239,7 +280,7 @@ namespace FaderPlugin {
 
                                 if(ImGui.Selectable(setting.ToString())) {
                                     selectedConfig[i].setting = setting;
-                                    config.Save();
+                                    SaveSelectedElementsConfig();
                                 }
                             }
                             ImGui.EndCombo();
@@ -261,7 +302,7 @@ namespace FaderPlugin {
                                     selectedConfig[i] = swap1;
                                     selectedConfig[i - 1] = swap2;
 
-                                    config.Save();
+                                    SaveSelectedElementsConfig();
                                 }
                             }
                         }
@@ -277,7 +318,7 @@ namespace FaderPlugin {
                                     selectedConfig[i] = swap1;
                                     selectedConfig[i + 1] = swap2;
 
-                                    config.Save();
+                                    SaveSelectedElementsConfig();
                                 }
                             }
                         }
@@ -287,7 +328,7 @@ namespace FaderPlugin {
                         if(ImGui.Button($"{FontAwesomeIcon.TrashAlt.ToIconString()}##{elementName}-{i}-delete")) {
                             selectedConfig.RemoveAt(i);
 
-                            config.Save();
+                            SaveSelectedElementsConfig();
                         }
                         ImGui.PopFont();
                     }
@@ -302,7 +343,7 @@ namespace FaderPlugin {
                         selectedConfig[^2] = swap1;
                         selectedConfig[^1] = swap2;
 
-                        config.Save();
+                        SaveSelectedElementsConfig();
                     }
                     ImGui.PopFont();
                 }
@@ -310,6 +351,14 @@ namespace FaderPlugin {
                 _windowSize = ImGui.GetWindowSize();
                 ImGui.End();
             }
+        }
+
+        private void SaveSelectedElementsConfig() {
+            foreach(var element in selectedElements) {
+                config.elementsConfig[element] = selectedConfig;
+            }
+
+            config.Save();
         }
 
         private void ImGuiHelpTooltip(string tooltip) {
