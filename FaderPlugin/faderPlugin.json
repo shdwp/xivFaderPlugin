@@ -9,7 +9,7 @@
   "Tags": [
     "UI"
   ],
-  "DalamudApiLevel": 6,
+  "DalamudApiLevel": 7,
   "IconUrl": "https://github.com/goatcorp/DalamudPlugins/raw/api6/plugins/faderPlugin/images/icon.png",
   "Changelog": "Release v2.1.0.0\n-- Features\n- Chat activity state\n\n-- Bug Fixes\n- Fix window size getting stuck when minimised\n-Fix Dancer and Summoner job gauges not being hidden."
 }
