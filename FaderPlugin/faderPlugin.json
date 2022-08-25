@@ -11,5 +11,5 @@
   ],
   "DalamudApiLevel": 7,
   "IconUrl": "https://github.com/goatcorp/DalamudPlugins/raw/api6/plugins/faderPlugin/images/icon.png",
-  "Changelog": "Release v2.1.0.0\n-- Features\n- Chat activity state\n\n-- Bug Fixes\n- Fix window size getting stuck when minimised\n-Fix Dancer and Summoner job gauges not being hidden."
+  "Changelog": "Release v2.2.0.0\n-- Features\n- Updated for Dalamud API 7\n- Added ability to edit multiple elements at once\n\n-- Bug Fixes\n- Fixed settings category button size"
 }
