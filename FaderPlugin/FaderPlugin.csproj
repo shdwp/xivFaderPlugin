@@ -16,6 +16,14 @@
 		<DalamudLibPath>$(AppData)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
 	</PropertyGroup>
 
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+	  <OutputPath />
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+	  <OutputPath />
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="DalamudPackager" Version="2.1.8" />
 		<Reference Include="FFXIVClientStructs">
