@@ -21,7 +21,8 @@
         InventoryGrid,
         Currency,
         ScenarioGuide,
-        QuestLog,
+        DutyList,
+        ServerInfo,
         MainMenu,
         Chat,
         Minimap,
@@ -70,8 +71,10 @@
                     return "Inventory Grid";
                 case Element.ScenarioGuide:
                     return "Scenario Guide";
-                case Element.QuestLog:
-                    return "Quest Log";
+                case Element.DutyList:
+                    return "Duty List";
+                case Element.ServerInfo:
+                    return "Server Information";
                 case Element.MainMenu:
                     return "Main Menu";
                 case Element.TargetInfo:
@@ -137,7 +140,8 @@
                 Element.ExperienceBar => new string[] { "_Exp" },
                 Element.ScenarioGuide => new string[] { "ScenarioTree" },
                 Element.InventoryGrid => new string[] { "_BagWidget" },
-                Element.QuestLog => new string[] { },
+                Element.DutyList => new string[] { "_ToDoList" },
+                Element.ServerInfo => new string [] { "_DTR" },
                 Element.MainMenu => new string[] { "_MainCommand" },
                 Element.Chat => new string[] { "ChatLog", "ChatLogPanel_0", "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3" },
                 Element.Minimap => new string[] { "_NaviMap" },
