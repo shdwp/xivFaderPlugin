@@ -12,6 +12,7 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 		<OutputPath>$(AppData)\XIVLauncher\devPlugins\faderPlugin\</OutputPath>
 		<DalamudLibPath>$(AppData)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
 	</PropertyGroup>
