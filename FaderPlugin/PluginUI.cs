@@ -385,6 +385,7 @@ namespace FaderPlugin {
 
         private bool ShouldIgnoreElement(Element elementId) {
             return elementId switch {
+                Element.QuestLog => true,
                 Element.Nameplates => true,
                 Element.Unknown => true,
                 _ => false,

@@ -21,6 +21,7 @@
         InventoryGrid,
         Currency,
         ScenarioGuide,
+        QuestLog,
         DutyList,
         ServerInfo,
         MainMenu,
