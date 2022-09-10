@@ -94,13 +94,14 @@ namespace FaderPlugin {
             if(isVisible) {
                 // Restore the elements position on screen.
                 bool positionExists = storedPositions.TryGetValue(name, out var position);
-                if(positionExists && addon->X == -9999) {
+                if (positionExists && (addon->X == -9999 || addon->Y == -9999))
+                {
                     var (x, y) = position;
                     addon->SetPosition(x, y);
                 }
             } else {
                 // Store the position prior to hiding the element.
-                if(addon->X != -9999) {
+                if(addon->X != -9999 && addon->Y != -9999) {
                     storedPositions[name] = (addon->X, addon->Y);
                 }
 
