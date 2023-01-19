@@ -48,9 +48,7 @@ namespace FaderPlugin {
         [PluginService] public static GameGui GameGui { get; set; }
         [PluginService] public static TargetManager TargetManager { get; set; }
 
-        public Plugin() {
-            Resolver.Initialize();
-
+        public Plugin() {;
             LoadConfig(out config);
             config.OnSave += UpdateAddonVisibility;
 
