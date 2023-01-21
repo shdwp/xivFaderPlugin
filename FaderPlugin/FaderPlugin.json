@@ -9,7 +9,6 @@
   "Tags": [
     "UI"
   ],
-  "DalamudApiLevel": 7,
   "IconUrl": "https://github.com/goatcorp/DalamudPlugins/raw/api6/plugins/faderPlugin/images/icon.png",
-  "Changelog": "Release v2.3.0.0\n-- Features\n- Added Duty List and Service Info"
+  "Changelog": "Updated for 6.3"
 }
