@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace FaderPlugin {
-    public sealed unsafe class Addon {
+    public static unsafe class Addon {
         private static readonly AtkStage* stage = AtkStage.GetSingleton();
 
         private static IntPtr hotbar;
@@ -14,32 +13,27 @@ namespace FaderPlugin {
         private static Dictionary<string, (short, short)> storedPositions = new();
         private static Dictionary<string, bool> lastState = new();
 
-        public static bool IsAddonOpen(string name) {
+        private static bool IsAddonOpen(string name) {
             IntPtr addonPointer = Plugin.GameGui.GetAddonByName(name, 1);
             return addonPointer != IntPtr.Zero;
         }
 
         public static bool HasAddonStateChanged(string name) {
             bool currentState = IsAddonOpen(name);
-            bool changed = false;
-
-            if(!lastState.ContainsKey(name) || lastState[name] != currentState) {
-                changed = true;
-            }
+            bool changed = !lastState.ContainsKey(name) || lastState[name] != currentState;
 
             lastState[name] = currentState;
 
             return changed;
         }
 
-        public static bool IsAddonFocused(string name) {
+        private static bool IsAddonFocused(string name) {
             var focusedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList;
             var focusedAddonList = &focusedUnitsList->AtkUnitEntries;
 
             for(var i = 0; i < focusedUnitsList->Count; i++) {
                 var addon = focusedAddonList[i];
                 var addonName = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
-                
 
                 if(addonName == name) {
                     return true;
@@ -71,14 +65,13 @@ namespace FaderPlugin {
             }
 
             try {
-                // Ccheck whether Mouse Mode or Gamepad Mode is enabled.
+                // Check whether Mouse Mode or Gamepad Mode is enabled.
                 var mouseModeEnabled = Marshal.ReadByte(hotbar, 0x1d6) == 0;
 
-                if(mouseModeEnabled == true) {
+                if(mouseModeEnabled) {
                     return Marshal.ReadByte(hotbar, 0x23f) != 0;
-                } else {
-                    return Marshal.ReadByte(crossbar, 0x23f) != 0;
                 }
+                return Marshal.ReadByte(crossbar, 0x23f) != 0;
             } catch(AccessViolationException) {
                 return true;
             }

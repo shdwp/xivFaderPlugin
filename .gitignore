@@ -1,4 +1,6 @@
 .vs/
+.git/
+.idea/
 obj/
 bin/
 packages/
