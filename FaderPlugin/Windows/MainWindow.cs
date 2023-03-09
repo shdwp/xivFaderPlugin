@@ -19,13 +19,13 @@ public class ConfigurationWindow : Window, IDisposable
     private readonly Config.Config config;
     private List<ConfigEntry> selectedConfig = new();
     private readonly List<Element> selectedElements = new();
-    
+
     private OverrideKeys CurrentOverrideKey => (OverrideKeys) config.OverrideKey;
-    
+
     private HttpClient httpClient = new();
     private string noticeString = string.Empty;
     private string noticeUrl = string.Empty;
-    
+
     public ConfigurationWindow(Config.Config config) : base("Configuration")
     {
         SizeConstraints = new WindowSizeConstraints
@@ -33,12 +33,12 @@ public class ConfigurationWindow : Window, IDisposable
             MinimumSize = new Vector2(730, 670),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
-            
+
         this.config = config;
-        
+
         DownloadAndParseNotice();
     }
-    
+
     public void Dispose() { }
 
     public override void Draw()
@@ -51,7 +51,7 @@ public class ConfigurationWindow : Window, IDisposable
         ImGuiHelpers.ScaledDummy(5, 0);
         ImGui.Separator();
         ImGuiHelpers.ScaledDummy(5, 0);
-        
+
         ImGui.Text("User Focus key:");
 
         ImGui.SameLine();
@@ -86,12 +86,12 @@ public class ConfigurationWindow : Window, IDisposable
             config.DefaultDelay = config.DefaultDelayEnabled() ? 0 : 2000;
             config.Save();
         }
-        
+
         if(defaultDelayEnabled) {
             ImGui.SameLine();
             ImGui.SetNextItemWidth(170);
             if(ImGui.SliderFloat("##default_delay", ref idleDelay, 0.1f, 15f, "%.1f seconds")) {
-                config.DefaultDelay = (long)TimeSpan.FromSeconds(Math.Round(idleDelay, 1)).TotalMilliseconds;
+                config.DefaultDelay = (int) TimeSpan.FromSeconds(Math.Round(idleDelay, 1)).TotalMilliseconds;
                 config.Save();
             }
         }
@@ -103,7 +103,7 @@ public class ConfigurationWindow : Window, IDisposable
         var chatActivityTimeout = (int) TimeSpan.FromMilliseconds(config.ChatActivityTimeout).TotalSeconds;
         ImGui.SetNextItemWidth(170);
         if(ImGui.SliderInt("##chat_activity_timeout", ref chatActivityTimeout, 1, 20, "%d seconds")) {
-            config.ChatActivityTimeout = (long) TimeSpan.FromSeconds(chatActivityTimeout).TotalMilliseconds;
+            config.ChatActivityTimeout = (int) TimeSpan.FromSeconds(chatActivityTimeout).TotalMilliseconds;
             config.Save();
         }
 
@@ -297,7 +297,7 @@ public class ConfigurationWindow : Window, IDisposable
             ImGui.PopFont();
         }
     }
-    
+
     private void SaveSelectedElementsConfig() {
         foreach(var element in selectedElements) {
             config.elementsConfig[element] = selectedConfig;
@@ -305,7 +305,7 @@ public class ConfigurationWindow : Window, IDisposable
 
         config.Save();
     }
-    
+
     private void ImGuiHelpTooltip(string tooltip) {
         ImGui.SameLine();
         ImGui.TextColored(new Vector4(0.8f, 0.8f, 0.8f, 1f), "?");
@@ -313,7 +313,7 @@ public class ConfigurationWindow : Window, IDisposable
             ImGui.SetTooltip(tooltip);
         }
     }
-    
+
     private string TooltipForElement(Element elementId) {
         return elementId switch {
             Element.Chat => "Should be always visible if focused, albeit feature can be buggy with some configurations",
@@ -326,7 +326,7 @@ public class ConfigurationWindow : Window, IDisposable
             _ => string.Empty,
         };
     }
-    
+
     private bool ShouldIgnoreElement(Element elementId) {
         return elementId switch {
             Element.QuestLog => true,
@@ -335,7 +335,7 @@ public class ConfigurationWindow : Window, IDisposable
             _ => false,
         };
     }
-    
+
     private void DownloadAndParseNotice() {
         try {
             var stringAsync = httpClient.GetStringAsync("https://shdwp.github.io/ukraine/xiv_notice.txt");
@@ -362,7 +362,7 @@ public class ConfigurationWindow : Window, IDisposable
             // ignored
         }
     }
-    
+
     private void DisplayNotice() {
         if(noticeString == string.Empty) {
             return;
@@ -371,7 +371,7 @@ public class ConfigurationWindow : Window, IDisposable
         ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DPSRed);
         ImGuiHelpers.SafeTextWrapped(noticeString);
         ImGui.PopStyleColor();
-            
+
         ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.ParsedGold);
         if(noticeUrl != string.Empty) {
             if(ImGui.Button(noticeUrl)) {
