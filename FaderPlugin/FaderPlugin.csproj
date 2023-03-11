@@ -52,8 +52,4 @@
 			<Private>false</Private>
 		</Reference>
 	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="bin\x64\Debug\FaderPlugin.json" />
-	</ItemGroup>
 </Project>
