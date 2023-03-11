@@ -20,8 +20,8 @@ namespace FaderPlugin.Config {
 
         public int Version { get; set; } = 6;
         public Dictionary<Element, List<ConfigEntry>> elementsConfig { get; set; }
-        public long DefaultDelay { get; set; } = 2000;
-        public long ChatActivityTimeout { get; set; } = 5 * 1000;
+        public int DefaultDelay { get; set; } = 2000;
+        public int ChatActivityTimeout { get; set; } = 5 * 1000;
         public int OverrideKey { get; set; } = 0x12;
         public bool FocusOnHotbarsUnlock { get; set; } = false;
 
