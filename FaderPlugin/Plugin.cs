@@ -158,8 +158,10 @@ namespace FaderPlugin {
             // Combat
             UpdateStateMap(State.Combat, Condition[ConditionFlag.InCombat]);
 
-            var target = TargetManager.Target;
+            // Weapon Unsheathed
+            UpdateStateMap(State.WeaponUnsheathed, Addon.IsWeaponUnsheathed());
 
+            var target = TargetManager.Target;
 
             // Enemy Target
             UpdateStateMap(State.EnemyTarget, target?.ObjectKind == ObjectKind.BattleNpc);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace FaderPlugin {
@@ -101,6 +102,11 @@ namespace FaderPlugin {
                 // Move the element off screen so it can't be interacted with.
                 addon->SetPosition(-9999, -9999);
             }
+        }
+
+        public static bool IsWeaponUnsheathed()
+        {
+            return UIState.Instance()->WeaponState.IsUnsheathed;
         }
     }
 }
