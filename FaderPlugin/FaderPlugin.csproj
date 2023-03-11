@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<Description>Fader Plugin</Description>
-		<Version>2.3.3.0</Version>
+		<Version>2.3.4.0</Version>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -13,18 +13,18 @@
 		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-		<OutputPath>$(AppData)\XIVLauncher\devPlugins\faderPlugin\</OutputPath>
 		<DalamudLibPath>$(AppData)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
 	</PropertyGroup>
 
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-	  <OutputPath />
-	</PropertyGroup>
-
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-	  <OutputPath />
-	</PropertyGroup>
-
+	<ItemGroup>
+		<Content Include="faderPlugin.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="images\icon.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	
 	<ItemGroup>
 		<PackageReference Include="DalamudPackager" Version="2.1.10" />
 		<Reference Include="FFXIVClientStructs">
@@ -43,5 +43,17 @@
 			<HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
+		<Reference Include="Lumina">
+			<HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Lumina.Excel">
+			<HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="bin\x64\Debug\FaderPlugin.json" />
 	</ItemGroup>
 </Project>

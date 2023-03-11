@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
+using Dalamud.Data;
 using Dalamud.Game;
 using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Conditions;
@@ -17,6 +18,8 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using FaderPlugin.Config;
 using FaderPlugin.Windows;
+using Lumina.Excel.GeneratedSheets;
+using Condition = Dalamud.Game.ClientState.Conditions.Condition;
 
 namespace FaderPlugin {
     public class Plugin : IDalamudPlugin {
@@ -50,6 +53,7 @@ namespace FaderPlugin {
         [PluginService] public static ChatGui ChatGui { get; set; } = null!;
         [PluginService] public static GameGui GameGui { get; set; } = null!;
         [PluginService] public static TargetManager TargetManager { get; set; } = null!;
+        [PluginService] public static DataManager Data { get; private set; } = null!;
 
         public Plugin() {;
             LoadConfig(out config);
@@ -161,6 +165,10 @@ namespace FaderPlugin {
             // Weapon Unsheathed
             UpdateStateMap(State.WeaponUnsheathed, Addon.IsWeaponUnsheathed());
 
+            // Island Sanctuary
+            var inIslandSanctuary = Data.GetExcelSheet<TerritoryType>()!.GetRow(ClientState.TerritoryType)!.TerritoryIntendedUse == 49;
+            UpdateStateMap(State.IslandSanctuary, inIslandSanctuary);
+
             var target = TargetManager.Target;
 
             // Enemy Target
@@ -182,7 +190,8 @@ namespace FaderPlugin {
             UpdateStateMap(State.Mounted, Condition[ConditionFlag.Mounted] || Condition[ConditionFlag.Mounted2]);
 
             // Duty
-            UpdateStateMap(State.Duty, Condition[ConditionFlag.BoundByDuty]);
+            var boundByDuty = Condition[ConditionFlag.BoundByDuty] || Condition[ConditionFlag.BoundByDuty56] || Condition[ConditionFlag.BoundByDuty95];
+            UpdateStateMap(State.Duty, !inIslandSanctuary && boundByDuty);
 
             // Only update display state if a state has changed.
             if(stateChanged || hasIdled || Addon.HasAddonStateChanged("HudLayout")) {
