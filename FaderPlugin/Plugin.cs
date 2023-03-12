@@ -67,22 +67,27 @@ namespace FaderPlugin {
             PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
 
             CommandManager.AddHandler(commandName, new CommandInfo(FaderCommandHandler) {
-                HelpMessage = "Opens settings, /pfader t toggles whether it's enabled."
+                HelpMessage = "Opens settings\n't' toggles whether it's enabled.\n'on' enables the plugin\n'off' disables the plugin."
             });
 
             foreach(State state in Enum.GetValues(typeof(State))) {
                 stateMap[state] = state == State.Default;
             }
 
+            // We don't want a looping timer, only once
+            idleTimer.AutoReset = false;
             idleTimer.Elapsed += (_, _) => {
                 hasIdled = true;
             };
+            idleTimer.Start();
 
             chatActivityTimer.Elapsed += (_, _) => {
                 hasChatActivity = false;
             };
 
             ChatGui.ChatMessage += OnChatMessage;
+
+            if (config.DefaultDelay == 0) config.DefaultDelay = 2000; // recover from previous misconfiguration
         }
 
         private void LoadConfig(out Config.Config configuration) {
@@ -121,16 +126,28 @@ namespace FaderPlugin {
             configurationWindow.IsOpen = true;
         }
 
-        private void FaderCommandHandler(string s, string arguments) {
-            arguments = arguments.Trim();
-            if(arguments is "t" or "toggle") {
-                enabled = !enabled;
-                ChatGui.Print($"Fader plugin {(enabled ? "enabled" : "disabled")}.");
-            } else if(arguments == "")
+        private void FaderCommandHandler(string s, string arguments)
+        {
+            switch (arguments.Trim())
             {
-                configurationWindow.IsOpen = true;
+                case "t" or "toggle":
+                    enabled = !enabled;
+                    ChatGui.Print($"Fader plugin {(enabled ? "enabled" : "disabled")}.");
+                    break;
+                case "on":
+                    enabled = true;
+                    ChatGui.Print($"Fader plugin enabled.");
+                    break;
+                case "off":
+                    enabled = false;
+                    ChatGui.Print($"Fader plugin disabled.");
+                    break;
+                case "":
+                    configurationWindow.IsOpen = true;
+                    break;
             }
         }
+
         private void OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
             if(!Constants.ActiveChatTypes.Contains(type)) {
                 // Don't trigger chat for non-standard chat channels.
@@ -197,9 +214,12 @@ namespace FaderPlugin {
             if(stateChanged || hasIdled || Addon.HasAddonStateChanged("HudLayout")) {
                 UpdateAddonVisibility();
 
-                if(config.DefaultDelayEnabled()) {
+                // Always set Idled to false to prevent looping
+                hasIdled = false;
+
+                // Only start idle timer if there was a state change
+                if(stateChanged && config.DefaultDelayEnabled) {
                     // If idle transition is enabled reset the idle state and start the timer.
-                    hasIdled = false;
                     idleTimer.Stop();
                     idleTimer.Interval = config.DefaultDelay;
                     idleTimer.Start();
@@ -242,13 +262,10 @@ namespace FaderPlugin {
                 {
                     List<ConfigEntry> elementConfig = config.GetElementConfig(element);
 
-                    foreach (ConfigEntry entry in elementConfig.Where(entry => stateMap[entry.state]))
+                    if (elementConfig.FirstOrDefault(entry => stateMap[entry.state]) is { } configEntry &&
+                        (configEntry.state != State.Default || !config.DefaultDelayEnabled || hasIdled))
                     {
-                        // If the state is default and idle is enabled, only set the setting if the state has idled.
-                        if(entry.state != State.Default || !config.DefaultDelayEnabled() || hasIdled) {
-                            setting = entry.setting;
-                        }
-                        break;
+                        setting = configEntry.setting;
                     }
                 }
 

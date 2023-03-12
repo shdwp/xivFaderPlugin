@@ -87,8 +87,7 @@ namespace FaderPlugin {
 
             if(isVisible) {
                 // Restore the elements position on screen.
-                bool positionExists = storedPositions.TryGetValue(name, out var position);
-                if (positionExists && (addon->X == -9999 || addon->Y == -9999))
+                if (storedPositions.TryGetValue(name, out var position) && (addon->X == -9999 || addon->Y == -9999))
                 {
                     var (x, y) = position;
                     addon->SetPosition(x, y);

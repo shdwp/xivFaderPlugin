@@ -55,6 +55,7 @@
                 Element.Hotbar9 => "Hotbar 9",
                 Element.Hotbar10 => "Hotbar 10",
                 Element.CrossHotbar => "Cross Hotbar",
+                Element.PetHotbar => "Pet Hotbar",
                 Element.CastBar => "Cast Bar",
                 Element.ExperienceBar => "Experience Bar",
                 Element.InventoryGrid => "Inventory Grid",
