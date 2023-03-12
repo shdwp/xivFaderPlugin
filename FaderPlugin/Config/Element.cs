@@ -40,76 +40,58 @@
     }
 
     public static class ElementUtil {
-        public static string GetElementName(Element element) {
-            switch(element) {
-                case Element.Hotbar1:
-                    return "Hotbar 1";
-                case Element.Hotbar2:
-                    return "Hotbar 2";
-                case Element.Hotbar3:
-                    return "Hotbar 3";
-                case Element.Hotbar4:
-                    return "Hotbar 4";
-                case Element.Hotbar5:
-                    return "Hotbar 5";
-                case Element.Hotbar6:
-                    return "Hotbar 6";
-                case Element.Hotbar7:
-                    return "Hotbar 7";
-                case Element.Hotbar8:
-                    return "Hotbar 8";
-                case Element.Hotbar9:
-                    return "Hotbar 9";
-                case Element.Hotbar10:
-                    return "Hotbar 10";
-                case Element.CrossHotbar:
-                    return "Cross Hotbar";
-                case Element.CastBar:
-                    return "Cast Bar";
-                case Element.ExperienceBar:
-                    return "Experience Bar";
-                case Element.InventoryGrid:
-                    return "Inventory Grid";
-                case Element.ScenarioGuide:
-                    return "Scenario Guide";
-                case Element.DutyList:
-                    return "Duty List";
-                case Element.ServerInfo:
-                    return "Server Information";
-                case Element.MainMenu:
-                    return "Main Menu";
-                case Element.TargetInfo:
-                    return "Target Info";
-                case Element.PartyList:
-                    return "Party List";
-                case Element.LimitBreak:
-                    return "Limit Break";
-                case Element.StatusEnhancements:
-                    return "Status Enhancements";
-                case Element.StatusEnfeeblements:
-                    return "Status Enfeeblements";
-                case Element.StatusOther:
-                    return "Status Other";
-                default:
-                    return element.ToString();
-            }
+        public static string GetElementName(Element element)
+        {
+            return element switch
+            {
+                Element.Hotbar1 => "Hotbar 1",
+                Element.Hotbar2 => "Hotbar 2",
+                Element.Hotbar3 => "Hotbar 3",
+                Element.Hotbar4 => "Hotbar 4",
+                Element.Hotbar5 => "Hotbar 5",
+                Element.Hotbar6 => "Hotbar 6",
+                Element.Hotbar7 => "Hotbar 7",
+                Element.Hotbar8 => "Hotbar 8",
+                Element.Hotbar9 => "Hotbar 9",
+                Element.Hotbar10 => "Hotbar 10",
+                Element.CrossHotbar => "Cross Hotbar",
+                Element.PetHotbar => "Pet Hotbar",
+                Element.CastBar => "Cast Bar",
+                Element.ExperienceBar => "Experience Bar",
+                Element.InventoryGrid => "Inventory Grid",
+                Element.ScenarioGuide => "Scenario Guide",
+                Element.DutyList => "Duty List",
+                Element.ServerInfo => "Server Information",
+                Element.MainMenu => "Main Menu",
+                Element.TargetInfo => "Target Info",
+                Element.PartyList => "Party List",
+                Element.LimitBreak => "Limit Break",
+                Element.StatusEnhancements => "Status Enhancements",
+                Element.StatusEnfeeblements => "Status Enfeeblements",
+                Element.StatusOther => "Status Other",
+                _ => element.ToString()
+            };
         }
 
         public static string[] GetAddonName(Element element) {
             return element switch {
-                Element.Hotbar1 => new string[] { "_ActionBar" },
-                Element.Hotbar2 => new string[] { "_ActionBar01" },
-                Element.Hotbar3 => new string[] { "_ActionBar02" },
-                Element.Hotbar4 => new string[] { "_ActionBar03" },
-                Element.Hotbar5 => new string[] { "_ActionBar04" },
-                Element.Hotbar6 => new string[] { "_ActionBar05" },
-                Element.Hotbar7 => new string[] { "_ActionBar06" },
-                Element.Hotbar8 => new string[] { "_ActionBar07" },
-                Element.Hotbar9 => new string[] { "_ActionBar08" },
-                Element.Hotbar10 => new string[] { "_ActionBar09" },
-                Element.CrossHotbar => new string[] { "_ActionCross", "_ActionDoubleCrossL", "_ActionDoubleCrossR" },
-                Element.PetHotbar => new string[] { "_ActionBarEx" },
-                Element.Job => new string[] {
+                Element.Hotbar1 => new[] { "_ActionBar" },
+                Element.Hotbar2 => new[] { "_ActionBar01" },
+                Element.Hotbar3 => new[] { "_ActionBar02" },
+                Element.Hotbar4 => new[] { "_ActionBar03" },
+                Element.Hotbar5 => new[] { "_ActionBar04" },
+                Element.Hotbar6 => new[] { "_ActionBar05" },
+                Element.Hotbar7 => new[] { "_ActionBar06" },
+                Element.Hotbar8 => new[] { "_ActionBar07" },
+                Element.Hotbar9 => new[] { "_ActionBar08" },
+                Element.Hotbar10 => new[] { "_ActionBar09" },
+                Element.CrossHotbar => new[] {
+                    "_ActionCross",
+                    "_ActionDoubleCrossL",
+                    "_ActionDoubleCrossR"
+                },
+                Element.PetHotbar => new[] { "_ActionBarEx" },
+                Element.Job => new[] {
                     "JobHudPLD0",
                     "JobHudWAR0",
                     "JobHudDRK0", "JobHudDRK1",
@@ -130,26 +112,39 @@
                     "JobHudSMN0", "JobHudSMN1",
                     "JobHudRDM0"
                 },
-                Element.PartyList => new string[] { "_PartyList" },
-                Element.LimitBreak => new string[] { "_LimitBreak" },
-                Element.Parameters => new string[] { "_ParameterWidget" },
-                Element.Status => new string[] { "_Status" },
-                Element.StatusEnhancements => new string[] { "_StatusCustom0" },
-                Element.StatusEnfeeblements => new string[] { "_StatusCustom1" },
-                Element.StatusOther => new string[] { "_StatusCustom2" },
-                Element.CastBar => new string[] { "_CastBar" },
-                Element.ExperienceBar => new string[] { "_Exp" },
-                Element.ScenarioGuide => new string[] { "ScenarioTree" },
-                Element.InventoryGrid => new string[] { "_BagWidget" },
-                Element.DutyList => new string[] { "_ToDoList" },
-                Element.ServerInfo => new string [] { "_DTR" },
-                Element.MainMenu => new string[] { "_MainCommand" },
-                Element.Chat => new string[] { "ChatLog", "ChatLogPanel_0", "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3" },
-                Element.Minimap => new string[] { "_NaviMap" },
-                Element.Currency => new string[] { "_Money" },
-                Element.TargetInfo => new string[] { "_TargetInfoMainTarget", "_TargetInfoBuffDebuff", "_TargetInfoCastBar", "_TargetInfo" },
+                Element.PartyList => new[] { "_PartyList" },
+                Element.LimitBreak => new[] { "_LimitBreak" },
+                Element.Parameters => new[] { "_ParameterWidget" },
+                Element.Status => new[] { "_Status" },
+                Element.StatusEnhancements => new[] { "_StatusCustom0" },
+                Element.StatusEnfeeblements => new[] { "_StatusCustom1" },
+                Element.StatusOther => new[] { "_StatusCustom2" },
+                Element.CastBar => new[] { "_CastBar" },
+                Element.ExperienceBar => new[] { "_Exp" },
+                Element.ScenarioGuide => new[] { "ScenarioTree" },
+                Element.InventoryGrid => new[] { "_BagWidget" },
+                Element.DutyList => new[] { "_ToDoList" },
+                Element.ServerInfo => new[] { "_DTR" },
+                Element.MainMenu => new[] { "_MainCommand" },
+                Element.Chat => new[]
+                {
+                    "ChatLog",
+                    "ChatLogPanel_0",
+                    "ChatLogPanel_1",
+                    "ChatLogPanel_2",
+                    "ChatLogPanel_3"
+                },
+                Element.Minimap => new[] { "_NaviMap" },
+                Element.Currency => new[] { "_Money" },
+                Element.TargetInfo => new[]
+                {
+                    "_TargetInfoMainTarget",
+                    "_TargetInfoBuffDebuff",
+                    "_TargetInfoCastBar",
+                    "_TargetInfo"
+                },
                 Element.Unknown => new string[] { },
-                _ => new string[] { },
+                _ => System.Array.Empty<string>(),
             };
         }
     }
