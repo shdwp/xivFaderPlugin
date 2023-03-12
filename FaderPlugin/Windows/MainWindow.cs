@@ -49,68 +49,80 @@ public class ConfigurationWindow : Window, IDisposable
         }
 
         ImGuiHelpers.ScaledDummy(5, 0);
-        ImGui.Separator();
-        ImGuiHelpers.ScaledDummy(5, 0);
 
-        ImGui.Text("User Focus key:");
+        if (ImGui.CollapsingHeader("General Settings", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            ImGui.Text("User Focus key:");
 
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(195);
-        if(ImGui.BeginCombo("", CurrentOverrideKey.ToString())) {
-            foreach(var option in Enum.GetValues(typeof(OverrideKeys))) {
-                if(ImGui.Selectable(option.ToString(), option.Equals(CurrentOverrideKey))) {
-                    config.OverrideKey = (int)option;
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(195);
+            if (ImGui.BeginCombo("", CurrentOverrideKey.ToString()))
+            {
+                foreach (var option in Enum.GetValues(typeof(OverrideKeys)))
+                {
+                    if (ImGui.Selectable(option.ToString(), option.Equals(CurrentOverrideKey)))
+                    {
+                        config.OverrideKey = (int)option;
+                        config.Save();
+                    }
+                }
+
+                ImGui.EndCombo();
+            }
+
+            ImGuiHelpTooltip("When held interface will be setup as per 'UserFocus' column.");
+
+            var focusOnHotbarsUnlock = config.FocusOnHotbarsUnlock;
+            if (ImGui.Checkbox("##focus_on_unlocked_bars", ref focusOnHotbarsUnlock))
+            {
+                config.FocusOnHotbarsUnlock = focusOnHotbarsUnlock;
+                config.Save();
+            }
+
+            ImGui.SameLine();
+            ImGui.Text("Always User Focus when hotbars are unlocked");
+            ImGuiHelpTooltip("When hotbars or crossbars are unlocked always setup to the UserFocus column.");
+
+            var idleDelay = (float)TimeSpan.FromMilliseconds(config.DefaultDelay).TotalSeconds;
+            ImGui.Text("Default delay:");
+            ImGui.SameLine();
+            bool defaultDelayEnabled = config.DefaultDelayEnabled;
+            if (ImGui.Checkbox("##default_delay_enabled", ref defaultDelayEnabled))
+            {
+                config.DefaultDelayEnabled = defaultDelayEnabled;
+                config.Save();
+            }
+
+            if (defaultDelayEnabled)
+            {
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(170);
+                if (ImGui.SliderFloat("##default_delay", ref idleDelay, 0.1f, 15f, "%.1f seconds"))
+                {
+                    config.DefaultDelay = (int)TimeSpan.FromSeconds(Math.Round(idleDelay, 1)).TotalMilliseconds;
                     config.Save();
                 }
             }
 
-            ImGui.EndCombo();
-        }
-        ImGuiHelpTooltip("When held interface will be setup as per 'UserFocus' column.");
+            ImGuiHelpTooltip("Amount of time it takes to go back to the `Idle` column.");
 
-        var focusOnHotbarsUnlock = config.FocusOnHotbarsUnlock;
-        if(ImGui.Checkbox("##focus_on_unlocked_bars", ref focusOnHotbarsUnlock)) {
-            config.FocusOnHotbarsUnlock = focusOnHotbarsUnlock;
-            config.Save();
-        }
-
-        ImGui.SameLine();
-        ImGui.Text("Always User Focus when hotbars are unlocked");
-        ImGuiHelpTooltip("When hotbars or crossbars are unlocked always setup to the UserFocus column.");
-
-        var idleDelay = (float)TimeSpan.FromMilliseconds(config.DefaultDelay).TotalSeconds;
-        ImGui.Text("Default delay:");
-        ImGui.SameLine();
-        bool defaultDelayEnabled = config.DefaultDelayEnabled();
-        if(ImGui.Checkbox("##default_delay_enabled", ref defaultDelayEnabled)) {
-            config.DefaultDelay = config.DefaultDelayEnabled() ? 0 : 2000;
-            config.Save();
-        }
-
-        if(defaultDelayEnabled) {
+            ImGui.Text("Chat activity timeout:");
             ImGui.SameLine();
+            var chatActivityTimeout = (int)TimeSpan.FromMilliseconds(config.ChatActivityTimeout).TotalSeconds;
             ImGui.SetNextItemWidth(170);
-            if(ImGui.SliderFloat("##default_delay", ref idleDelay, 0.1f, 15f, "%.1f seconds")) {
-                config.DefaultDelay = (int) TimeSpan.FromSeconds(Math.Round(idleDelay, 1)).TotalMilliseconds;
+            if (ImGui.SliderInt("##chat_activity_timeout", ref chatActivityTimeout, 1, 20, "%d seconds"))
+            {
+                config.ChatActivityTimeout = (int)TimeSpan.FromSeconds(chatActivityTimeout).TotalMilliseconds;
                 config.Save();
             }
         }
 
-        ImGuiHelpTooltip("Amount of time it takes to go back to the `Idle` column.");
-
-        ImGui.Text("Chat activity timeout:");
-        ImGui.SameLine();
-        var chatActivityTimeout = (int) TimeSpan.FromMilliseconds(config.ChatActivityTimeout).TotalSeconds;
-        ImGui.SetNextItemWidth(170);
-        if(ImGui.SliderInt("##chat_activity_timeout", ref chatActivityTimeout, 1, 20, "%d seconds")) {
-            config.ChatActivityTimeout = (int) TimeSpan.FromSeconds(chatActivityTimeout).TotalMilliseconds;
-            config.Save();
-        }
-
-        ImGuiHelpers.SafeTextWrapped("Hint: you can select multiple elements to be edited at the same time. Configuration of the element that was selected first will override the rest.");
-
         ImGuiHelpers.ScaledDummy(5, 0);
         ImGui.Separator();
+        ImGuiHelpers.ScaledDummy(5, 0);
+
+        ImGuiHelpers.SafeTextWrapped("Hint: You can select multiple elements to be edited at the same time.\nConfiguration of the element that was selected first will override the rest.");
+
         ImGuiHelpers.ScaledDummy(5, 0);
 
         ImGui.Columns(2, "columns", false);
@@ -317,6 +329,7 @@ public class ConfigurationWindow : Window, IDisposable
     private string TooltipForElement(Element elementId) {
         return elementId switch {
             Element.Chat => "Should be always visible if focused, albeit feature can be buggy with some configurations",
+            Element.CrossHotbar => "WXHB is always visible, unless the option 'Position WXHB separately from XHB' is used",
             Element.PetHotbar => "Pet and mount actions",
             Element.Job => "Job-specific UI",
             Element.Status => "Player status (when not split into 3 separate elements)",
