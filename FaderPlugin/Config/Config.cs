@@ -26,6 +26,8 @@ namespace FaderPlugin.Config {
         public int OverrideKey { get; set; } = 0x12;
         public bool FocusOnHotbarsUnlock { get; set; } = false;
 
+        public bool Migrated = false;  // TODO delete this in the next update
+
         public void Initialize() {
             // Initialise the config.
             if(elementsConfig == null) {
@@ -37,7 +39,25 @@ namespace FaderPlugin.Config {
                     List<ConfigEntry> entry = new() { new ConfigEntry(State.Default, Setting.Show) };
                     elementsConfig[element] = entry;
                 }
+
+                // TODO delete this in the next update
+                if (!Migrated)
+                {
+                    if(elementsConfig.ContainsKey(element)) {
+                        foreach (var entry in elementsConfig[element])
+                        {
+                            if (entry.state is State.IslandSanctuary or State.WeaponUnsheathed)
+                            {
+                                entry.state += 2;
+                                Plugin.ChatGui.Print(Constants.BuildMigrationMessage(element.ToString()));
+                            }
+                        }
+                    }
+                }
             }
+
+            // TODO delete this in the next update
+            if (!Migrated) Migrated = true;
 
             Save();
         }
