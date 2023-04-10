@@ -83,6 +83,20 @@ public class ConfigurationWindow : Window, IDisposable
             ImGui.Text("Always User Focus when hotbars are unlocked");
             ImGuiHelpTooltip("When hotbars or crossbars are unlocked always setup to the UserFocus column.");
 
+            var emoteChat = config.EmoteActivity;
+            if (ImGui.Checkbox("Emotes trigger chat activity", ref emoteChat))
+            {
+                config.EmoteActivity = emoteChat;
+                config.Save();
+            }
+
+            var importChat = config.ImportantActivity;
+            if (ImGui.Checkbox("System messages trigger chat activity", ref importChat))
+            {
+                config.ImportantActivity = importChat;
+                config.Save();
+            }
+
             var idleDelay = (float)TimeSpan.FromMilliseconds(config.DefaultDelay).TotalSeconds;
             ImGui.Text("Default delay:");
             ImGui.SameLine();

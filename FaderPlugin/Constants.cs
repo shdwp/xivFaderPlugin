@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Dalamud.Game.Text;
-using Dalamud.Game.Text.SeStringHandling;
 
 namespace FaderPlugin;
 
@@ -33,28 +32,25 @@ public static class Constants
         XivChatType.CrossLinkShell8
     };
 
+    public static readonly List<XivChatType> EmoteChatTypes = new()
+    {
+        XivChatType.CustomEmote,
+        XivChatType.StandardEmote,
+    };
+
+    public static readonly List<XivChatType> ImportantChatTypes = new()
+    {
+        XivChatType.Debug,
+        XivChatType.Echo,
+        XivChatType.SystemError,
+        XivChatType.SystemMessage,
+        XivChatType.ErrorMessage,
+
+    };
+
     public enum OverrideKeys {
         Alt = 0x12,
         Ctrl = 0x11,
         Shift = 0x10,
-    }
-
-    // TODO delete this in the next update
-    public static SeString BuildMigrationMessage(string element)
-    {
-        return new SeStringBuilder()
-            .AddUiForeground(570)
-            .AddText("Fader Plugin: ")
-            .AddUiForegroundOff()
-            .AddUiForeground(34)
-            .AddText(element)
-            .AddUiForegroundOff()
-            .AddText(" has been migrated after the previous update broke its config. ")
-            .AddText("If in the last update the condition was intentionally set to be ")
-            .AddUiForeground(34)
-            .AddText("'IslandSanctuary' or 'WeaponUnsheathed'")
-            .AddUiForegroundOff()
-            .AddText(" so has this been reverted too, please change it back in your config.")
-            .BuiltString;
     }
 }

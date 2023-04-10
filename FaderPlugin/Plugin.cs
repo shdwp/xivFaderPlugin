@@ -148,11 +148,13 @@ namespace FaderPlugin {
             }
         }
 
-        private void OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
-            if(!Constants.ActiveChatTypes.Contains(type)) {
-                // Don't trigger chat for non-standard chat channels.
+        private void OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled)
+        {
+            // Don't trigger chat for non-standard chat channels.
+            if (!Constants.ActiveChatTypes.Contains(type)
+                && (!config.ImportantActivity || !Constants.ImportantChatTypes.Contains(type))
+                && (!config.EmoteActivity || !Constants.EmoteChatTypes.Contains(type)))
                 return;
-            }
 
             hasChatActivity = true;
             chatActivityTimer.Stop();
@@ -169,6 +171,11 @@ namespace FaderPlugin {
 
             // User Focus
             UpdateStateMap(State.UserFocus, KeyState[config.OverrideKey] || (config.FocusOnHotbarsUnlock && !Addon.AreHotbarsLocked()));
+
+            // Key Focus
+            UpdateStateMap(State.AltKeyFocus, KeyState[(int) Constants.OverrideKeys.Alt]);
+            UpdateStateMap(State.CtrlKeyFocus, KeyState[(int) Constants.OverrideKeys.Ctrl]);
+            UpdateStateMap(State.ShiftKeyFocus, KeyState[(int) Constants.OverrideKeys.Shift]);
 
             // Chat Focus
             UpdateStateMap(State.ChatFocus, Addon.IsChatFocused());
