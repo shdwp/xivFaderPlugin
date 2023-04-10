@@ -25,6 +25,8 @@ namespace FaderPlugin.Config {
         public int ChatActivityTimeout { get; set; } = 5 * 1000;
         public int OverrideKey { get; set; } = 0x12;
         public bool FocusOnHotbarsUnlock { get; set; } = false;
+        public bool EmoteActivity { get; set; } = false;
+        public bool ImportantActivity { get; set; } = false;
 
         public void Initialize() {
             // Initialise the config.
