@@ -53,7 +53,11 @@ namespace FaderPlugin {
         }
 
         public static bool IsChatFocused() {
-            return IsAddonFocused("ChatLog");
+            // Check for ChatLogPanel_[0-2] as well to prevent chat from disappearing while user is scrolling through logs via controller input
+            if (IsAddonFocused("ChatLog") || IsAddonFocused("ChatLogPanel_0") || IsAddonFocused("ChatLogPanel_1") || IsAddonFocused("ChatLogPanel_2"))
+                return true;
+
+            return false;
         }
 
         public static bool AreHotbarsLocked() {
