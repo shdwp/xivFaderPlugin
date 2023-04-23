@@ -29,19 +29,28 @@ namespace FaderPlugin {
         }
 
         private static bool IsAddonFocused(string name) {
-            var focusedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList;
-            var focusedAddonList = &focusedUnitsList->AtkUnitEntries;
+            try
+            {
+                var focusedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList;
+                var focusedAddonList = &focusedUnitsList->AtkUnitEntries;
 
-            for(var i = 0; i < focusedUnitsList->Count; i++) {
-                var addon = focusedAddonList[i];
-                var addonName = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
+                for (var i = 0; i < focusedUnitsList->Count; i++)
+                {
+                    var addon = focusedAddonList[i];
+                    var addonName = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
 
-                if(addonName == name) {
-                    return true;
+                    if (addonName == name)
+                    {
+                        return true;
+                    }
                 }
-            }
 
-            return false;
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public static bool IsHudManagerOpen() {
