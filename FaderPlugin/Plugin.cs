@@ -189,6 +189,9 @@ namespace FaderPlugin {
             // Weapon Unsheathed
             UpdateStateMap(State.WeaponUnsheathed, Addon.IsWeaponUnsheathed());
 
+            // In Sanctuary (e.g Cities, Aetheryte Villages)
+            UpdateStateMap(State.InSanctuary, Addon.InSanctuary());
+
             // Island Sanctuary
             var inIslandSanctuary = Data.GetExcelSheet<TerritoryType>()!.GetRow(ClientState.TerritoryType)!.TerritoryIntendedUse == 49;
             UpdateStateMap(State.IslandSanctuary, inIslandSanctuary);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
@@ -61,8 +62,14 @@ namespace FaderPlugin {
             return HasAddonStateChanged("HudLayout");
         }
 
-        public static bool IsChatFocused() {
-            return IsAddonFocused("ChatLog");
+        public static bool IsChatFocused()
+        {
+            // Check for ChatLogPanel_[0-3] as well to prevent chat from disappearing while user is scrolling through logs via controller input
+            return IsAddonFocused("ChatLog")
+                   || IsAddonFocused("ChatLogPanel_0")
+                   || IsAddonFocused("ChatLogPanel_1")
+                   || IsAddonFocused("ChatLogPanel_2")
+                   || IsAddonFocused("ChatLogPanel_3");
         }
 
         public static bool AreHotbarsLocked() {
@@ -92,6 +99,7 @@ namespace FaderPlugin {
             if(addonPointer == IntPtr.Zero) {
                 return;
             }
+
             AtkUnitBase* addon = (AtkUnitBase*)addonPointer;
 
             if(isVisible) {
@@ -115,6 +123,11 @@ namespace FaderPlugin {
         public static bool IsWeaponUnsheathed()
         {
             return UIState.Instance()->WeaponState.IsUnsheathed;
+        }
+
+        public static bool InSanctuary()
+        {
+            return GameMain.IsInSanctuary();
         }
     }
 }
