@@ -21,6 +21,7 @@ namespace FaderPlugin.Config {
         AltKeyFocus = 15,
         CtrlKeyFocus = 16,
         ShiftKeyFocus = 17,
+        InSanctuary = 18,
     }
 
     public static class StateUtil {
@@ -32,6 +33,7 @@ namespace FaderPlugin.Config {
                 State.PlayerTarget => "Player Target",
                 State.NPCTarget => "NPC Target",
                 State.WeaponUnsheathed => "Weapon Unsheathed",
+                State.InSanctuary => "In Sanctuary",
                 State.IslandSanctuary => "Island Sanctuary",
                 State.ChatActivity => "Chat Activity",
                 State.ChatFocus => "Chat Focus",
@@ -55,6 +57,7 @@ namespace FaderPlugin.Config {
             State.Mounted,
             State.Combat,
             State.WeaponUnsheathed,
+            State.InSanctuary,
             State.IslandSanctuary,
             State.ChatActivity,
             State.ChatFocus,
