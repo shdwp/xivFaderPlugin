@@ -344,6 +344,7 @@ public class ConfigurationWindow : Window, IDisposable
         return elementId switch {
             Element.Chat => "Should be always visible if focused, albeit feature can be buggy with some configurations",
             Element.CrossHotbar => "WXHB is always visible, unless the option 'Position WXHB separately from XHB' is used",
+            Element.ContextActionHotbar => "Additional Actions (for example in Island, Criterion or certain fights)",
             Element.PetHotbar => "Pet and mount actions",
             Element.Job => "Job-specific UI",
             Element.Status => "Player status (when not split into 3 separate elements)",

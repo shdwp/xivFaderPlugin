@@ -14,6 +14,7 @@
         Hotbar10,
         CrossHotbar,
         PetHotbar,
+        ContextActionHotbar,
 
         Job,
         CastBar,
@@ -24,6 +25,7 @@
         QuestLog,
         DutyList,
         ServerInfo,
+        IslekeepIndex,
         MainMenu,
         Chat,
         Minimap,
@@ -56,10 +58,12 @@
                 Element.Hotbar10 => "Hotbar 10",
                 Element.CrossHotbar => "Cross Hotbar",
                 Element.PetHotbar => "Pet Hotbar",
+                Element.ContextActionHotbar => "Context Action Hotbar",
                 Element.CastBar => "Cast Bar",
                 Element.ExperienceBar => "Experience Bar",
                 Element.InventoryGrid => "Inventory Grid",
                 Element.ScenarioGuide => "Scenario Guide",
+                Element.IslekeepIndex => "Islekeep's Index",
                 Element.DutyList => "Duty List",
                 Element.ServerInfo => "Server Information",
                 Element.MainMenu => "Main Menu",
@@ -90,6 +94,7 @@
                     "_ActionDoubleCrossL",
                     "_ActionDoubleCrossR"
                 },
+                Element.ContextActionHotbar => new [] {"_ActionContents"},
                 Element.PetHotbar => new[] { "_ActionBarEx" },
                 Element.Job => new[] {
                     "JobHudPLD0",
@@ -125,6 +130,7 @@
                 Element.InventoryGrid => new[] { "_BagWidget" },
                 Element.DutyList => new[] { "_ToDoList" },
                 Element.ServerInfo => new[] { "_DTR" },
+                Element.IslekeepIndex => new [] { "MJIHud" },
                 Element.MainMenu => new[] { "_MainCommand" },
                 Element.Chat => new[]
                 {
