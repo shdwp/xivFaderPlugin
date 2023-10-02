@@ -5,8 +5,8 @@ using System.Net.Http;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
 using FaderPlugin.Config;
 using ImGuiNET;
 
@@ -26,7 +26,7 @@ public class ConfigurationWindow : Window, IDisposable
     private string noticeString = string.Empty;
     private string noticeUrl = string.Empty;
 
-    public ConfigurationWindow(Config.Config config) : base("Configuration")
+    public ConfigurationWindow(Config.Config config) : base("Configuration###Fader")
     {
         SizeConstraints = new WindowSizeConstraints
         {
@@ -381,7 +381,7 @@ public class ConfigurationWindow : Window, IDisposable
             noticeUrl = strArray[1];
 
             if(!(noticeUrl.StartsWith("http://") || noticeUrl.StartsWith("https://"))) {
-                PluginLog.Warning($"Received invalid noticeUrl {noticeUrl}, ignoring");
+                Plugin.Log.Warning($"Received invalid noticeUrl {noticeUrl}, ignoring");
                 noticeUrl = string.Empty;
             }
         }
