@@ -2,29 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
-using Dalamud.Data;
-using Dalamud.Game;
-using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.Command;
-using Dalamud.Game.Gui;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using FaderPlugin.Config;
 using FaderPlugin.Windows;
 using Lumina.Excel.GeneratedSheets;
-using Condition = Dalamud.Game.ClientState.Conditions.Condition;
 
 namespace FaderPlugin {
     public class Plugin : IDalamudPlugin {
-        public string Name => "Fader Plugin";
-
         private readonly Config.Config config;
         private readonly ConfigurationWindow configurationWindow;
         private readonly WindowSystem windowSystem = new("Fader");
@@ -45,15 +38,16 @@ namespace FaderPlugin {
         private bool enabled = true;
 
         [PluginService] public static DalamudPluginInterface PluginInterface { get; set; } = null!;
-        [PluginService] public static KeyState KeyState { get; set; } = null!;
-        [PluginService] public static Framework Framework { get; set; } = null!;
-        [PluginService] public static ClientState ClientState { get; set; } = null!;
-        [PluginService] public static Condition Condition { get; set; } = null!;
-        [PluginService] public static CommandManager CommandManager { get; set; } = null!;
-        [PluginService] public static ChatGui ChatGui { get; set; } = null!;
-        [PluginService] public static GameGui GameGui { get; set; } = null!;
-        [PluginService] public static TargetManager TargetManager { get; set; } = null!;
-        [PluginService] public static DataManager Data { get; private set; } = null!;
+        [PluginService] public static IKeyState KeyState { get; set; } = null!;
+        [PluginService] public static IFramework Framework { get; set; } = null!;
+        [PluginService] public static IClientState ClientState { get; set; } = null!;
+        [PluginService] public static ICondition Condition { get; set; } = null!;
+        [PluginService] public static ICommandManager CommandManager { get; set; } = null!;
+        [PluginService] public static IChatGui ChatGui { get; set; } = null!;
+        [PluginService] public static IGameGui GameGui { get; set; } = null!;
+        [PluginService] public static ITargetManager TargetManager { get; set; } = null!;
+        [PluginService] public static IDataManager Data { get; private set; } = null!;
+        [PluginService] public static IPluginLog Log { get; private set; } = null!;
 
         public Plugin() {;
             LoadConfig(out config);
@@ -162,7 +156,7 @@ namespace FaderPlugin {
             chatActivityTimer.Start();
         }
 
-        private void OnFrameworkUpdate(Framework framework) {
+        private void OnFrameworkUpdate(IFramework framework) {
             if(!IsSafeToWork()) {
                 return;
             }

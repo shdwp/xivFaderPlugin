@@ -32,13 +32,9 @@ namespace FaderPlugin {
         private static bool IsAddonFocused(string name) {
             try
             {
-                var focusedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList;
-                var focusedAddonList = &focusedUnitsList->AtkUnitEntries;
-
-                for (var i = 0; i < focusedUnitsList->Count; i++)
+                foreach (var addon in stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList.EntriesSpan)
                 {
-                    var addon = focusedAddonList[i];
-                    var addonName = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
+                    var addonName = Marshal.PtrToStringAnsi(new IntPtr(addon.Value->Name));
 
                     if (addonName == name)
                     {
