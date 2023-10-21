@@ -29,6 +29,11 @@ namespace FaderPlugin {
         private readonly Timer idleTimer = new();
         private bool hasIdled;
 
+        // Job Change
+        private uint currentJobId;
+        private readonly Timer jobChangeReadyTimer = new();
+        private bool isJobChangeReady;
+
         // Chat State
         private readonly Timer chatActivityTimer = new();
         private bool hasChatActivity;
@@ -74,6 +79,14 @@ namespace FaderPlugin {
                 hasIdled = true;
             };
             idleTimer.Start();
+
+            // Fired once after job change
+            jobChangeReadyTimer.AutoReset = false;
+            jobChangeReadyTimer.Interval = 100;
+            jobChangeReadyTimer.Elapsed += (_, _) => {
+                isJobChangeReady = true;
+            };
+            jobChangeReadyTimer.Start();
 
             chatActivityTimer.Elapsed += (_, _) => {
                 hasChatActivity = false;
@@ -214,12 +227,15 @@ namespace FaderPlugin {
             var boundByDuty = Condition[ConditionFlag.BoundByDuty] || Condition[ConditionFlag.BoundByDuty56] || Condition[ConditionFlag.BoundByDuty95];
             UpdateStateMap(State.Duty, !inIslandSanctuary && boundByDuty);
 
+            stateChanged |= isJobChangeReady;
+
             // Only update display state if a state has changed.
             if(stateChanged || hasIdled || Addon.HasAddonStateChanged("HudLayout")) {
                 UpdateAddonVisibility();
 
-                // Always set Idled to false to prevent looping
+                // Set single-fired timers to false to prevent looping
                 hasIdled = false;
+                isJobChangeReady = false;
 
                 // Only start idle timer if there was a state change
                 if(stateChanged && config.DefaultDelayEnabled) {
@@ -228,6 +244,12 @@ namespace FaderPlugin {
                     idleTimer.Interval = config.DefaultDelay;
                     idleTimer.Start();
                 }
+            }
+
+            // During job change, job gauges require a delay before it can be hidden
+            if (CheckJobChanged()) {
+                jobChangeReadyTimer.Stop();
+                jobChangeReadyTimer.Start();
             }
         }
 
@@ -281,6 +303,13 @@ namespace FaderPlugin {
                     Addon.SetAddonVisibility(addonName, setting == Setting.Show);
                 }
             }
+        }
+
+        private bool CheckJobChanged() {
+            uint newJobId = ClientState.LocalPlayer?.ClassJob.Id ?? 0;
+            bool changed = newJobId != currentJobId;
+            currentJobId = newJobId;
+            return changed;
         }
 
         /// <summary>
