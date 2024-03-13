@@ -34,7 +34,7 @@ namespace FaderPlugin {
             foreach (var addon in stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList.EntriesSpan)
             {
                 if (addon.Value == null || addon.Value->Name == null)
-                    return false;
+                    continue;
 
                 if (MemoryHelper.EqualsZeroTerminatedString(name, (nint) addon.Value->Name))
                     return true;
