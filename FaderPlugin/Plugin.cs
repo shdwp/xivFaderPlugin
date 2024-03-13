@@ -190,17 +190,14 @@ namespace FaderPlugin {
             UpdateStateMap(State.IslandSanctuary, inIslandSanctuary);
 
             var target = TargetManager.Target;
-            if (target != null)
-            {
-                // Enemy Target
-                UpdateStateMap(State.EnemyTarget, target.ObjectKind == ObjectKind.BattleNpc);
+            // Enemy Target
+            UpdateStateMap(State.EnemyTarget, target?.ObjectKind == ObjectKind.BattleNpc);
 
-                // Player Target
-                UpdateStateMap(State.PlayerTarget, target.ObjectKind == ObjectKind.Player);
+            // Player Target
+            UpdateStateMap(State.PlayerTarget, target?.ObjectKind == ObjectKind.Player);
 
-                // NPC Target
-                UpdateStateMap(State.NPCTarget, target.ObjectKind == ObjectKind.EventNpc);
-            }
+            // NPC Target
+            UpdateStateMap(State.NPCTarget, target?.ObjectKind == ObjectKind.EventNpc);
 
             // Crafting
             UpdateStateMap(State.Crafting, Condition[ConditionFlag.Crafting]);
