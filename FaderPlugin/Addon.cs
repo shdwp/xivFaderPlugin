@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -30,24 +31,16 @@ namespace FaderPlugin {
         }
 
         private static bool IsAddonFocused(string name) {
-            try
+            foreach (var addon in stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList.EntriesSpan)
             {
-                foreach (var addon in stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList.EntriesSpan)
-                {
-                    var addonName = Marshal.PtrToStringAnsi(new IntPtr(addon.Value->Name));
+                if (addon.Value == null || addon.Value->Name == null)
+                    return false;
 
-                    if (addonName == name)
-                    {
-                        return true;
-                    }
-                }
+                if (MemoryHelper.EqualsZeroTerminatedString(name, (nint) addon.Value->Name))
+                    return true;
+            }
 
-                return false;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return false;
         }
 
         public static bool IsHudManagerOpen() {
