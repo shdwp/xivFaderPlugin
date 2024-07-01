@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace FaderPlugin {
     public static unsafe class Addon {
-        private static readonly AtkStage* stage = AtkStage.GetSingleton();
+        private static readonly AtkStage* stage = AtkStage.Instance();
 
         private static IntPtr hotbar;
         private static IntPtr crossbar;
@@ -31,12 +30,12 @@ namespace FaderPlugin {
         }
 
         private static bool IsAddonFocused(string name) {
-            foreach (var addon in stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList.EntriesSpan)
+            foreach (var addon in stage->RaptureAtkUnitManager->AtkUnitManager.FocusedUnitsList.Entries)
             {
                 if (addon.Value == null || addon.Value->Name == null)
                     continue;
 
-                if (MemoryHelper.EqualsZeroTerminatedString(name, (nint) addon.Value->Name))
+                if (name.Equals(addon.Value->NameString))
                     return true;
             }
 

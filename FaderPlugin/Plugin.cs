@@ -37,7 +37,7 @@ namespace FaderPlugin {
         private readonly string commandName = "/pfader";
         private bool enabled = true;
 
-        [PluginService] public static DalamudPluginInterface PluginInterface { get; set; } = null!;
+        [PluginService] public static IDalamudPluginInterface PluginInterface { get; set; } = null!;
         [PluginService] public static IKeyState KeyState { get; set; } = null!;
         [PluginService] public static IFramework Framework { get; set; } = null!;
         [PluginService] public static IClientState ClientState { get; set; } = null!;
@@ -142,7 +142,7 @@ namespace FaderPlugin {
             }
         }
 
-        private void OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled)
+        private void OnChatMessage(XivChatType type, int _, ref SeString sender, ref SeString message, ref bool isHandled)
         {
             // Don't trigger chat for non-standard chat channels.
             if (!Constants.ActiveChatTypes.Contains(type)
