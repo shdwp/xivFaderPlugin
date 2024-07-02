@@ -1,7 +1,7 @@
-﻿namespace FaderPlugin.Config {
-    public enum Setting {
-        Show,
-        Hide,
-        Unknown
-    }
+﻿namespace FaderPlugin.Config;
+
+public enum Setting {
+    Show,
+    Hide,
+    Unknown
 }

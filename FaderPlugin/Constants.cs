@@ -5,8 +5,8 @@ namespace FaderPlugin;
 
 public static class Constants
 {
-    public static readonly List<XivChatType> ActiveChatTypes = new()
-    {
+    public static readonly List<XivChatType> ActiveChatTypes =
+    [
         XivChatType.Say,
         XivChatType.Party,
         XivChatType.Alliance,
@@ -30,25 +30,26 @@ public static class Constants
         XivChatType.CrossLinkShell6,
         XivChatType.CrossLinkShell7,
         XivChatType.CrossLinkShell8
-    };
+    ];
 
-    public static readonly List<XivChatType> EmoteChatTypes = new()
-    {
+    public static readonly List<XivChatType> EmoteChatTypes =
+    [
         XivChatType.CustomEmote,
-        XivChatType.StandardEmote,
-    };
+        XivChatType.StandardEmote
+    ];
 
-    public static readonly List<XivChatType> ImportantChatTypes = new()
-    {
+    public static readonly List<XivChatType> ImportantChatTypes =
+    [
         XivChatType.Debug,
         XivChatType.Echo,
         XivChatType.SystemError,
         XivChatType.SystemMessage,
-        XivChatType.ErrorMessage,
+        XivChatType.ErrorMessage
 
-    };
+    ];
 
-    public enum OverrideKeys {
+    public enum OverrideKeys
+    {
         Alt = 0x12,
         Ctrl = 0x11,
         Shift = 0x10,
