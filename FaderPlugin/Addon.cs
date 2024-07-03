@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace FaderPlugin;
 
 public static unsafe class Addon {
     private static readonly AtkStage* stage = AtkStage.Instance();
-
-    private static nint hotbar;
-    private static nint crossbar;
 
     private static Dictionary<string, (short, short)> storedPositions = new();
     private static Dictionary<string, bool> lastState = new();
@@ -62,22 +59,19 @@ public static unsafe class Addon {
     }
 
     public static bool AreHotbarsLocked() {
-        if(hotbar == nint.Zero) {
-            hotbar = Plugin.GameGui.GetAddonByName("_ActionBar", 1);
-        }
+        var hotbar = Plugin.GameGui.GetAddonByName("_ActionBar", 1);
+        var crossbar = Plugin.GameGui.GetAddonByName("_ActionCross", 1);
 
-        if(crossbar == nint.Zero) {
-            crossbar = Plugin.GameGui.GetAddonByName("_ActionCross", 1);
-        }
+        if (hotbar == nint.Zero || crossbar == nint.Zero)
+            return true;
+
+        var hotbarAddon = (AddonActionBar*)hotbar;
+        var crossbarAddon = (AddonActionCross*)hotbar;
 
         try {
             // Check whether Mouse Mode or Gamepad Mode is enabled.
-            var mouseModeEnabled = Marshal.ReadByte(hotbar, 0x1d6) == 0;
-
-            if(mouseModeEnabled) {
-                return Marshal.ReadByte(hotbar, 0x23f) != 0;
-            }
-            return Marshal.ReadByte(crossbar, 0x23f) != 0;
+            var mouseModeEnabled = hotbarAddon->ShowHideFlags == 0;
+            return mouseModeEnabled ? hotbarAddon->IsLocked : crossbarAddon->IsLocked;
         } catch(AccessViolationException) {
             return true;
         }
