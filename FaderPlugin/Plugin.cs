@@ -14,7 +14,8 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FaderPlugin.Config;
 using FaderPlugin.Windows;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel;
+using Lumina.Excel.Sheets;
 
 namespace FaderPlugin;
 
@@ -38,6 +39,8 @@ public class Plugin : IDalamudPlugin {
     private readonly string commandName = "/pfader";
     private bool enabled = true;
 
+    private ExcelSheet<TerritoryType> territorySheet;
+
     [PluginService] public static IDalamudPluginInterface PluginInterface { get; set; } = null!;
     [PluginService] public static IKeyState KeyState { get; set; } = null!;
     [PluginService] public static IFramework Framework { get; set; } = null!;
@@ -56,6 +59,8 @@ public class Plugin : IDalamudPlugin {
 
         configurationWindow = new ConfigurationWindow(config);
         windowSystem.AddWindow(configurationWindow);
+
+        territorySheet = Data.GetExcelSheet<TerritoryType>();
 
         Framework.Update += OnFrameworkUpdate;
         PluginInterface.UiBuilder.Draw += DrawUI;
@@ -187,7 +192,7 @@ public class Plugin : IDalamudPlugin {
         UpdateStateMap(State.InSanctuary, Addon.InSanctuary());
 
         // Island Sanctuary
-        var inIslandSanctuary = Data.GetExcelSheet<TerritoryType>()!.GetRow(ClientState.TerritoryType)!.TerritoryIntendedUse == 49;
+        var inIslandSanctuary = territorySheet.HasRow(ClientState.TerritoryType) && territorySheet.GetRow(ClientState.TerritoryType).TerritoryIntendedUse.RowId == 49;
         UpdateStateMap(State.IslandSanctuary, inIslandSanctuary);
 
         var target = TargetManager.Target;
